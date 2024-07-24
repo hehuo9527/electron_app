@@ -1,0 +1,18 @@
+{
+    "title":"Remote Camera Setting",
+    "logIn":"Log In",
+    "loginIn":"Login In",
+    "exit":"Exit",
+    "userName":"UserName",
+    "password":"Password",
+    "userNameIsEmpty":"Username cannot be empty!",
+    "passwordIsEmpty":"Password cannot be empty!",
+    "cameraConnection":"Camera Connection",
+    "requestRemoteSetting":"Request Remote Setting",
+    "cameraConnecting":"Camera Connecting...",
+    "pleaseKeepU":"Please keep USB connection and Choose PC Remote",
+    "camera":"Camera:",
+    "status":"Status:",
+    "clientId":"Client ID:",
+    "remoterId":"Remoter ID:"
+}

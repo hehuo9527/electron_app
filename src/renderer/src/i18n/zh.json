@@ -1,0 +1,18 @@
+{
+    "title":"远程相机设置",
+    "logIn":"登录",
+    "loginIn":"登录系统",
+    "exit":"退出",
+    "userName":"用户名",
+    "password":"密码",
+    "userNameIsEmpty":"用户名不能为空!",
+    "passwordIsEmpty":"密码不能为空!",
+    "cameraConnection":"连接相机",
+    "requestRemoteSetting":"请求远程设置",
+    "cameraConnecting":"相机连接中...",
+    "pleaseKeepU":"请保持相机正在USB连接",
+    "camera":"相机：",
+    "status":"状态：",
+    "clientId":"客户端ID：",
+    "remoterId":"远程ID："
+}
