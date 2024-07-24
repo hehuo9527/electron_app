@@ -1,41 +1,10 @@
-<template>
-  <header id="titlebar">
-    <div id="drag-region">
-      <el-row
-        ><div class="grid-content" />
-        <el-col :span="10">
-          <div id="window-title">
-            <el-icon style="margin-right: 4px; font-size: 20px"><CameraFilled /></el-icon>
-            <span>{{ t('title') }}</span>
-          </div>
-        </el-col>
-        <el-col :span="11" style="text-align: right">
-          <div v-if="isUserDisable" id="min-button" class="user-button" style="margin-right: 8px">
-            <el-icon style="margin-right: 4px"><UserFilled /></el-icon>User A
-          </div>
-        </el-col>
-        <el-col :span="3" style="text-align: right">
-          <div class="window-controls">
-            <div v-if="isUserDisable" id="exit-button" class="button" @click="loginOut">
-              {{ t('exit') }}
-            </div>
-            <div id="close-button" class="button" @click="closeWindow">
-              <el-icon><CloseBold /></el-icon>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
-  </header>
-</template>
-
 <script setup lang="ts">
 import { ipcRenderer } from 'electron'
 import { ref } from 'vue'
-import emitter from '../../../../utils/emitter'
+import emitter from '@src/utils/emitter'
 import { useRouter } from 'vue-router'
-import { authService } from '../../../../utils/authService'
-import { userInfo } from '../../../../types/userTypes'
+import { authService } from '@src/utils/authService'
+import { userInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 const isUserDisable = ref(false)
 const router = useRouter()
@@ -59,6 +28,43 @@ function loginOut() {
   router.push('/Login')
 }
 </script>
+
+<template>
+  <header id="titlebar">
+    <div id="drag-region">
+      <el-row>
+        <div class="grid-content" />
+        <el-col :span="10">
+          <div id="window-title">
+            <el-icon style="margin-right: 4px; font-size: 20px">
+              <CameraFilled />
+            </el-icon>
+            <span>{{ t('title') }}</span>
+          </div>
+        </el-col>
+        <el-col :span="11" style="text-align: right">
+          <div v-if="isUserDisable" id="min-button" class="user-button" style="margin-right: 8px">
+            <el-icon style="margin-right: 4px">
+              <UserFilled />
+            </el-icon>User A
+          </div>
+        </el-col>
+        <el-col :span="3" style="text-align: right">
+          <div class="window-controls">
+            <div v-if="isUserDisable" id="exit-button" class="button" @click="loginOut">
+              {{ t('exit') }}
+            </div>
+            <div id="close-button" class="button" @click="closeWindow">
+              <el-icon>
+                <CloseBold />
+              </el-icon>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+  </header>
+</template>
 
 <style>
 #titlebar {
@@ -117,7 +123,7 @@ function loginOut() {
 }
 
 /* #window-controls {
-   -webkit-app-region: no-drag; 
+   -webkit-app-region: no-drag;
 } */
 
 .window-controls .button {
@@ -141,11 +147,11 @@ function loginOut() {
 }
 
 @media (-webkit-device-pixel-ratio: 1.5),
-  (device-pixel-ratio: 1.5),
-  (-webkit-device-pixel-ratio: 2),
-  (device-pixel-ratio: 2),
-  (-webkit-device-pixel-ratio: 3),
-  (device-pixel-ratio: 3) {
+(device-pixel-ratio: 1.5),
+(-webkit-device-pixel-ratio: 2),
+(device-pixel-ratio: 2),
+(-webkit-device-pixel-ratio: 3),
+(device-pixel-ratio: 3) {
   .window-controls .icon {
     width: 10px;
     height: 10px;
@@ -173,6 +179,7 @@ function loginOut() {
 #exit-button:hover {
   background: #f1707a !important;
 }
+
 #close-button:active .icon {
   filter: invert(1);
 }
