@@ -4,9 +4,9 @@ import { useRouter } from 'vue-router'
 import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus'
 import emitter from '../../../../utils/emitter'
-import { loginInfo, userInfo } from '../../../../types/userTypes'
+import { loginInfo, userInfo } from '@src/types/userTypes'
 // import {auth} from '../../../../utils/apiRequest'
-import { authService } from '../../../../utils/authService'
+import { authService } from '@src/utils/authService'
 import { useI18n } from 'vue-i18n'
 const labelPosition = ref('top')
 const router = useRouter()
@@ -55,8 +55,8 @@ const onSubmit = async () => {
 </script>
 <template>
   <el-card class="login-card" shadow="hover">
-    <el-row :gutter="20"
-      ><div class="grid-content" />
+    <el-row :gutter="20">
+      <div class="grid-content" />
       <el-col :span="12" class="img-box">
         <img src="../../assets/login.png" style="max-width: 200px" />
       </el-col>
@@ -98,31 +98,38 @@ const onSubmit = async () => {
 .button-style {
   color: rgb(218, 11, 98) !important;
 }
+
 .img-box {
   display: flex !important;
   justify-content: center;
   align-items: center;
 }
+
 .login-card {
   width: 99%;
   /* margin:5px; */
   background-color: rgb(253, 242, 235) !important;
 }
+
 .login-form {
   background-color: rgb(252, 255, 250) !important;
   border-bottom: 2px solid rgb(247, 220, 228) !important;
 }
+
 .login-title {
   font-size: 18px;
   font-weight: bold;
   color: rgb(179, 125, 174) !important;
 }
+
 .el-form-item__label {
   color: rgb(214, 188, 211) !important;
 }
+
 .el-radio-group {
   margin-left: 5%;
 }
+
 .block {
   text-align: center;
   display: inline-block;
@@ -131,24 +138,29 @@ const onSubmit = async () => {
   box-sizing: border-box;
   vertical-align: top;
 }
+
 .path-input {
   margin-left: 7.5%;
   margin-right: 5px;
 }
+
 .el-row:last-child {
   margin-bottom: 10px;
 }
+
 .el-col {
   text-align: left;
   vertical-align: middle;
   border-radius: 4px;
   /* border: 1px solid grey; */
 }
+
 .grid-content {
   border-radius: 1px;
   min-height: 5px;
   justify-content: center;
 }
+
 b {
   font-weight: bold !important;
 }

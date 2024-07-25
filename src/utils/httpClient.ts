@@ -33,4 +33,26 @@ export class HttpClient {
       throw error
     }
   }
+
+  // Delete
+  async delete(url: string, data?: any): Promise<any> {
+    try {
+      const response = await this.axiosInstance.delete(url, data)
+      return response.data
+    } catch (error) {
+      console.error('delete请求错误:', error)
+      throw error
+    }
+  }
+
+  // PUT
+  async put(url: string, data?: any): Promise<any> {
+    try {
+      const response = await this.axiosInstance.put(url, data)
+      return response.data
+    } catch (error) {
+      console.error('PUT请求错误:', error)
+      throw error
+    }
+  }
 }
