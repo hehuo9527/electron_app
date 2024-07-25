@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { cameraInfo, remoterInfo } from '../../../../types/userTypes'
+import { cameraInfo } from '@src/types/cameraTypes'
+import { remoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 
 const cInfo = ref<cameraInfo>()
@@ -70,27 +71,15 @@ async function requestRemoteSetting() {
 }
 </script>
 <template>
-  <el-row :gutter="20"
-    ><div class="grid-content" />
+  <el-row :gutter="20">
+    <div class="grid-content" />
     <el-col :span="12">
-      <el-button
-        type="primary"
-        plain
-        class="border-button"
-        :disabled="isCameraButtonDisabled"
-        @click="cameraConnection"
-        >{{ t('cameraConnection') }}</el-button
-      >
+      <el-button type="primary" plain class="border-button" :disabled="isCameraButtonDisabled"
+        @click="cameraConnection">{{ t('cameraConnection') }}</el-button>
     </el-col>
     <el-col :span="12" style="text-align: right">
-      <el-button
-        type="primary"
-        plain
-        class="border-button"
-        :disabled="isRemoterButtonDisabled"
-        @click="requestRemoteSetting"
-        >{{ t('requestRemoteSetting') }}</el-button
-      >
+      <el-button type="primary" plain class="border-button" :disabled="isRemoterButtonDisabled"
+        @click="requestRemoteSetting">{{ t('requestRemoteSetting') }}</el-button>
     </el-col>
   </el-row>
   <el-row v-if="isAlertMessageBoxVisible" :gutter="20">
@@ -109,16 +98,13 @@ async function requestRemoteSetting() {
         <el-col>
           <div class="message-box">
             <p>
-              <b>{{ t('camera') }}</b
-              >{{ cInfo?.camera }}
+              <b>{{ t('camera') }}</b>{{ cInfo?.camera }}
             </p>
             <p>
-              <b>{{ t('status') }}</b
-              >{{ cInfo?.status }}
+              <b>{{ t('status') }}</b>{{ cInfo?.status }}
             </p>
             <p>
-              <b>{{ t('clientId') }}</b
-              >{{ cInfo?.clientId }}
+              <b>{{ t('clientId') }}</b>{{ cInfo?.clientId }}
             </p>
           </div>
         </el-col>
@@ -127,12 +113,10 @@ async function requestRemoteSetting() {
         <el-col>
           <div class="message-box" style="margin-top: 16px">
             <p>
-              <b>{{ t('remoterId') }}</b
-              >{{ rInfo?.remoterId }}
+              <b>{{ t('remoterId') }}</b>{{ rInfo?.remoterId }}
             </p>
             <p>
-              <b>{{ t('status') }}</b
-              >{{ rInfo?.status }}
+              <b>{{ t('status') }}</b>{{ rInfo?.status }}
             </p>
           </div>
         </el-col>
@@ -155,10 +139,12 @@ async function requestRemoteSetting() {
   color: black !important;
   padding: 6px 30px !important;
 }
+
 .border-button:hover {
   background-color: rgb(237, 125, 49) !important;
   color: white !important;
 }
+
 .alert-message-box {
   border: 1px solid black;
   text-align: center;
@@ -168,14 +154,17 @@ async function requestRemoteSetting() {
   margin-left: auto;
   margin-right: auto;
 }
+
 .alert-message-box .title {
   font-size: 24px;
   font-weight: bold;
 }
+
 .alert-message-box .message {
   font-size: 18px;
   color: rgb(237, 125, 48);
 }
+
 .camera-img-box {
   margin-top: 10px;
   max-height: 300px;
@@ -183,9 +172,11 @@ async function requestRemoteSetting() {
   padding: 4px;
   border: 1px solid #ccc;
 }
+
 b {
   font-weight: bold !important;
 }
+
 .message-box {
   border: 1px solid rgb(220, 220, 220);
   padding: 10px;

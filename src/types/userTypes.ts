@@ -3,12 +3,6 @@ export interface axiosConfig {
   timeout?: number
 }
 
-export interface cameraInfo {
-  camera: string
-  status: string
-  clientId: string
-  imgPath: string
-}
 export interface remoterInfo {
   remoterId: string
   status: string

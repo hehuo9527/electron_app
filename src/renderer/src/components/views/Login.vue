@@ -3,10 +3,10 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus'
-import emitter from '../../../../utils/emitter'
+import emitter from '@src/utils/emitter'
 import { loginInfo, userInfo } from '@src/types/userTypes'
 // import {auth} from '../../../../utils/apiRequest'
-import { authService } from '@src/utils/authService'
+import { authService } from '@src//utils/authService'
 import { useI18n } from 'vue-i18n'
 const labelPosition = ref('top')
 const router = useRouter()

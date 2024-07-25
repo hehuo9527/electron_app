@@ -14,8 +14,8 @@
     "paths": {
       "@renderer/*": [
         "src/renderer/src/*",
-        "src/*"
-      ]
+      ],
+      "@src/*":["./src/*"]
     }
   }
 }
