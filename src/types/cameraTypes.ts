@@ -5,11 +5,6 @@ export interface CameraInfo {
   imgPath: string
 }
 
-export enum CameraReturnStatus {
-  OK = 'OK',
-  NG = 'NG'
-}
-
 export interface CameraRequestParameters {
   prop: string
   type: string
@@ -18,6 +13,12 @@ export interface CameraRequestParameters {
 
 export interface CameraRespMsg {
   prop: string
-  status: CameraReturnStatus
+  status: string
   message: string
+}
+
+export interface CameraOperationMsg {
+  operation: string
+  name: string
+  val?: string
 }

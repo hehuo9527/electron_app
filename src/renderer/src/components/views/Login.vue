@@ -5,11 +5,14 @@ import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus'
 import emitter from '@src/utils/emitter'
 import { loginInfo, userInfo } from '@src/types/userTypes'
-// import {auth} from '../../../../utils/apiRequest'
+import { SendCommandToCameraService } from '../services/send-command-to-camera.service'
 import { authService } from '@src//utils/authService'
 import { useI18n } from 'vue-i18n'
 
-
+function testws() {
+  const commandToCameraService = new SendCommandToCameraService()
+  commandToCameraService.SendCommandToCamera('test')
+}
 
 const labelPosition = ref('top')
 const router = useRouter()
@@ -48,22 +51,13 @@ async function login() {
   }
   aService.save(user)
   emitter.emit('login-event', 'test')
-  router.push('/Camera')
+  router.push('amera')
   //}
 }
 
 const onSubmit = async () => {
   await login()
 }
-
-function testws() {
-  const messageArgs = ['test', 'ws://localhost:8080']
-  window.api.wsSend(messageArgs)
-  // const ws_socket = WebSocket(`ws://localhost:8080`)
-  // console.log(ws_socket)
-  // ws_socket.send("1111")
-}
-
 </script>
 <template>
   <el-card class="login-card" shadow="hover">
@@ -79,16 +73,26 @@ function testws() {
               <span class="login-title">{{ t('logIn') }}</span>
             </el-col>
           </el-row>
-          <el-form :label-position="labelPosition" label-width="100px" :model="formLabelAlign" style="max-width: 460px">
+          <el-form
+            :label-position="labelPosition"
+            label-width="100px"
+            :model="formLabelAlign"
+            style="max-width: 460px"
+          >
             <el-form-item :label="t('userName')" class="input-label">
               <el-input v-model="formLabelAlign.userName" />
             </el-form-item>
             <el-form-item :label="t('password')" class="input-label">
-              <el-input v-model="formLabelAlign.password" type="password" show-password autocomplete="off" />
+              <el-input
+                v-model="formLabelAlign.password"
+                type="password"
+                show-password
+                autocomplete="off"
+              />
             </el-form-item>
             <el-form-item>
               <el-button type="danger" @click="onSubmit">{{ t('loginIn') }}</el-button>
-              <el-button @click="testws">test</el-button>
+              <!-- <el-button @click="testws">test</el-button> -->
             </el-form-item>
           </el-form>
         </el-card>

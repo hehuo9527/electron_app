@@ -44,9 +44,7 @@ function loginOut() {
         </el-col>
         <el-col :span="11" style="text-align: right">
           <div v-if="isUserDisable" id="min-button" class="user-button" style="margin-right: 8px">
-            <el-icon style="margin-right: 4px">
-              <UserFilled />
-            </el-icon>User A
+            <el-icon style="margin-right: 4px"> <UserFilled /> </el-icon>User A
           </div>
         </el-col>
         <el-col :span="3" style="text-align: right">
@@ -147,11 +145,11 @@ function loginOut() {
 }
 
 @media (-webkit-device-pixel-ratio: 1.5),
-(device-pixel-ratio: 1.5),
-(-webkit-device-pixel-ratio: 2),
-(device-pixel-ratio: 2),
-(-webkit-device-pixel-ratio: 3),
-(device-pixel-ratio: 3) {
+  (device-pixel-ratio: 1.5),
+  (-webkit-device-pixel-ratio: 2),
+  (device-pixel-ratio: 2),
+  (-webkit-device-pixel-ratio: 3),
+  (device-pixel-ratio: 3) {
   .window-controls .icon {
     width: 10px;
     height: 10px;
