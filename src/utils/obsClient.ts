@@ -1,34 +1,43 @@
-import OBSWebSocket, { EventSubscription } from 'obs-websocket-js'
-const obs = new OBSWebSocket()
+import OBSWebSocket from 'obs-websocket-js'
 
-// connect to obs-websocket running on localhost with same port
-await obs.connect()
+export class OBSClient {
+  private obs: OBSWebSocket
+  private isConnected: boolean
 
-// Connect to obs-ws running on 192.168.0.4
-await obs.connect('ws://192.168.0.4:4455')
+  constructor() {
+    this.obs = new OBSWebSocket()
+    this.isConnected = false
+  }
 
-// Connect to localhost with password
-await obs.connect('ws://127.0.0.1:4455', 'super-sekret')
-
-// Connect expecting RPC version 1
-await obs.connect('ws://127.0.0.1:4455', undefined, { rpcVersion: 1 })
-
-// Connect with request for high-volume event
-await obs.connect('ws://127.0.0.1:4455', undefined, {
-  eventSubscriptions: EventSubscription.All | EventSubscription.InputVolumeMeters,
-  rpcVersion: 1
-})
-
-// A complete example
-try {
-  const { obsWebSocketVersion, negotiatedRpcVersion } = await obs.connect(
-    'ws://192.168.0.4:4455',
-    'password',
-    {
-      rpcVersion: 1
+  async connect(url: string, password: string, customeRpcVersion = 1): Promise<void> {
+    try {
+      const { obsWebSocketVersion, negotiatedRpcVersion } = await this.obs.connect(url, password, {
+        rpcVersion: customeRpcVersion
+      })
+      this.isConnected = true
+    } catch (error) {
+      console.error('Failed to connect to OBS WebSocket server', error)
+      this.isConnected = false
+      throw error
     }
-  )
-  console.log(`Connected to server ${obsWebSocketVersion} (using RPC ${negotiatedRpcVersion})`)
-} catch (error) {
-  console.error('Failed to connect', error)
+  }
+
+  async getSourceScreenshot(
+    sourceName: string,
+    imageFormat: 'png' | 'jpeg' = 'png'
+  ): Promise<{ imageData: string }> {
+    return this.obs.call('GetSourceScreenshot', { sourceName, imageFormat })
+  }
+
+  async disconnect(): Promise<void> {
+    if (this.isConnected) {
+      try {
+        await this.obs.disconnect()
+        this.isConnected = false
+        console.log('Disconnected from OBS WebSocket server')
+      } catch (error) {
+        console.error('Failed to disconnect from OBS WebSocket server', error)
+      }
+    }
+  }
 }

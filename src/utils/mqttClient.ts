@@ -2,19 +2,19 @@ import { v4 as uuidv4 } from 'uuid'
 import mqtt from 'mqtt'
 import type { MqttClient } from 'mqtt'
 
-export let pMQTT: MQTT
+// let pMQTT: MQTT
 
-export function initMQTT(username: string) {
-  pMQTT = new MQTT(username)
-  pMQTT.createConnection()
-  pMQTT.topicSubscribe()
-}
+// export function initMQTT(username: string) {
+//   pMQTT = new MQTT(username)
+//   pMQTT.createConnection()
+//   pMQTT.topicSubscribe()
+// }
 
-export function releaseMQTT() {
-  pMQTT.destroyConnection()
-}
+// export function releaseMQTT() {
+//   pMQTT.destroyConnection()
+// }
 
-class MQTT {
+export class MQTT {
   url: string
   client!: MqttClient
   clientId: string
@@ -49,9 +49,9 @@ class MQTT {
       console.log('Reconnecting...')
     })
 
-    this.client.on('message', (topic, message) => {
-      console.log(`Received message ${message} from topic ${topic}`)
-    })
+    // this.client.on('message', (topic, message) => {
+    //   console.log(`Received message ${message} from topic ${topic}`)
+    // })
   }
 
   topicSubscribe() {
