@@ -1,10 +1,10 @@
-import { axiosConfig } from '@src/types/userTypes'
+import { AxiosConfig } from '@src/types/userTypes'
 import { HttpClient } from '@src/utils/httpClient'
 
 export class SendCommandToCameraService {
   private cameraServerURL = import.meta.env.VITE_CAMERA_SDK_SERVER_URL
 
-  config: axiosConfig = {
+  config: AxiosConfig = {
     baseURL: this.cameraServerURL
   }
 

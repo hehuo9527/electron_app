@@ -1,11 +1,11 @@
-import { userInfo } from 'src/types/userTypes'
+import { UserInfo } from 'src/types/userTypes'
 
 export class authService {
-  save(uInfo: userInfo) {
+  save(uInfo: UserInfo) {
     localStorage.setItem('userInfo', JSON.stringify(uInfo))
   }
 
-  get(): userInfo | null {
+  get(): UserInfo | null {
     const content = localStorage.getItem('userInfo')
     if (content) {
       return JSON.parse(content)

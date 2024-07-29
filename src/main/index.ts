@@ -5,8 +5,8 @@ import { wsSend } from './external'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 700,
-    height: 416,
+    width: 1200,
+    height: 700,
     autoHideMenuBar: true,
     resizable: false,
     frame: false,

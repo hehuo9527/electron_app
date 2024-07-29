@@ -4,19 +4,16 @@ import { ref } from 'vue'
 import emitter from '@src/utils/emitter'
 import { useRouter } from 'vue-router'
 import { authService } from '@src/utils/authService'
-import { userInfo } from '@src/types/userTypes'
+import { UserInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 const isUserDisable = ref(false)
 const router = useRouter()
 const aService = new authService()
 const { t } = useI18n()
 emitter.on('login-event', (value: any) => {
-  console.log(value)
-  if (value == 'test') {
-    const uInfo: userInfo | null = aService.get()
-    console.log(uInfo)
-    isUserDisable.value = true
-  }
+  const uInfo: UserInfo | null = aService.get()
+  console.log(uInfo)
+  isUserDisable.value = true
 })
 function closeWindow() {
   aService.clear()
@@ -33,7 +30,7 @@ function loginOut() {
   <header id="titlebar">
     <div id="drag-region">
       <el-row>
-        <div class="grid-content" />
+        <div />
         <el-col :span="10">
           <div id="window-title">
             <el-icon style="margin-right: 4px; font-size: 20px">
@@ -44,7 +41,9 @@ function loginOut() {
         </el-col>
         <el-col :span="11" style="text-align: right">
           <div v-if="isUserDisable" id="min-button" class="user-button" style="margin-right: 8px">
-            <el-icon style="margin-right: 4px"> <UserFilled /> </el-icon>User A
+            <el-icon style="margin-right: 4px">
+              <UserFilled /> </el-icon
+            >User A
           </div>
         </el-col>
         <el-col :span="3" style="text-align: right">

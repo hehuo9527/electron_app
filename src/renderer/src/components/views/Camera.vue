@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { CameraInfo } from '@src/types/cameraTypes'
-import { remoterInfo } from '@src/types/userTypes'
+import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 
 const cInfo = ref<CameraInfo>()
-const rInfo = ref<remoterInfo>()
+const rInfo = ref<RemoterInfo>()
 const isAlertMessageBoxVisible = ref(false)
 const isMessageBoxVisible = ref(false)
 const isRemoterButtonDisabled = ref(false)
@@ -16,7 +16,7 @@ async function waitFiveSeconds(): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve()
-    }, 5000)
+    }, 1000)
   })
 }
 
@@ -71,86 +71,129 @@ async function requestRemoteSetting() {
 }
 </script>
 <template>
-  <el-row :gutter="20">
-    <div class="grid-content" />
-    <el-col :span="12">
-      <el-button
-        type="primary"
-        plain
-        class="border-button"
-        :disabled="isCameraButtonDisabled"
-        @click="cameraConnection"
-        >{{ t('cameraConnection') }}</el-button
-      >
-    </el-col>
-    <el-col :span="12" style="text-align: right">
-      <el-button
-        type="primary"
-        plain
-        class="border-button"
-        :disabled="isRemoterButtonDisabled"
-        @click="requestRemoteSetting"
-        >{{ t('requestRemoteSetting') }}</el-button
-      >
-    </el-col>
-  </el-row>
-  <el-row v-if="isAlertMessageBoxVisible" :gutter="20">
-    <div class="grid-content" />
-    <el-col style="text-align: center">
-      <div class="alert-message-box" style="box-shadow: var(--el-box-shadow-lighter)">
-        <div class="title">{{ t('cameraConnecting') }}</div>
-        <div class="message">{{ t('pleaseKeepU') }}</div>
+  <div class="camera-page">
+    <el-row>
+      <div />
+      <el-col :span="12">
+        <el-button
+          type="primary"
+          plain
+          class="border-button"
+          :disabled="isCameraButtonDisabled"
+          @click="cameraConnection"
+          >{{ t('cameraConnection') }}</el-button
+        >
+      </el-col>
+      <el-col :span="12" style="text-align: right">
+        <el-button
+          type="primary"
+          plain
+          class="border-button"
+          :disabled="isRemoterButtonDisabled"
+          @click="requestRemoteSetting"
+          >{{ t('requestRemoteSetting') }}</el-button
+        >
+      </el-col>
+    </el-row>
+    <el-row v-if="isAlertMessageBoxVisible" class="waiting-rect">
+      <div />
+      <el-col style="text-align: center">
+        <div class="alert-message-box" style="box-shadow: var(--el-box-shadow-lighter)">
+          <div class="title">{{ t('cameraConnecting') }}</div>
+          <div class="message">{{ t('pleaseKeepU') }}</div>
+        </div>
+      </el-col>
+    </el-row>
+    <div v-if="isMessageBoxVisible" class="camera-content">
+      <div class="camera-content-left">
+        <div class="message-box">
+          <p>
+            <b>{{ t('camera') }}</b
+            >{{ cInfo?.camera }}
+          </p>
+          <p>
+            <b>{{ t('status') }}</b
+            >{{ cInfo?.status }}
+          </p>
+          <p>
+            <b>{{ t('clientId') }}</b
+            >{{ cInfo?.clientId }}
+          </p>
+        </div>
+        <div class="message-box" style="margin-top: 16px">
+          <p>
+            <b>{{ t('remoterId') }}</b
+            >{{ rInfo?.remoterId }}
+          </p>
+          <p>
+            <b>{{ t('status') }}</b
+            >{{ rInfo?.status }}
+          </p>
+        </div>
       </div>
-    </el-col>
-  </el-row>
-  <el-row v-if="isMessageBoxVisible" :gutter="20" style="margin-top: 20px">
-    <div class="grid-content" />
-    <el-col :span="12">
-      <el-row :gutter="20">
-        <el-col>
-          <div class="message-box">
-            <p>
-              <b>{{ t('camera') }}</b
-              >{{ cInfo?.camera }}
-            </p>
-            <p>
-              <b>{{ t('status') }}</b
-              >{{ cInfo?.status }}
-            </p>
-            <p>
-              <b>{{ t('clientId') }}</b
-              >{{ cInfo?.clientId }}
-            </p>
-          </div>
-        </el-col>
-      </el-row>
-      <el-row :gutter="20">
-        <el-col>
-          <div class="message-box" style="margin-top: 16px">
-            <p>
-              <b>{{ t('remoterId') }}</b
-              >{{ rInfo?.remoterId }}
-            </p>
-            <p>
-              <b>{{ t('status') }}</b
-              >{{ rInfo?.status }}
-            </p>
-          </div>
-        </el-col>
-      </el-row>
-    </el-col>
-    <el-col :span="12">
-      <el-row :gutter="20">
-        <el-col style="text-align: right">
-          <img class="camera-img-box" :src="cInfo?.imgPath" />
-        </el-col>
-      </el-row>
-    </el-col>
-  </el-row>
+      <div class="camera-content-right">
+        <img class="camera-img-box" :src="cInfo?.imgPath" />
+      </div>
+    </div>
+    <!-- <el-row v-if="isMessageBoxVisible" class="camera-content">
+      <div />
+      <el-col :span="8">
+        <el-row>
+          <el-col>
+            <div class="message-box">
+              <p>
+                <b>{{ t('camera') }}</b
+                >{{ cInfo?.camera }}
+              </p>
+              <p>
+                <b>{{ t('status') }}</b
+                >{{ cInfo?.status }}
+              </p>
+              <p>
+                <b>{{ t('clientId') }}</b
+                >{{ cInfo?.clientId }}
+              </p>
+            </div>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            <div class="message-box" style="margin-top: 16px">
+              <p>
+                <b>{{ t('remoterId') }}</b
+                >{{ rInfo?.remoterId }}
+              </p>
+              <p>
+                <b>{{ t('status') }}</b
+                >{{ rInfo?.status }}
+              </p>
+            </div>
+          </el-col>
+        </el-row>
+      </el-col>
+      <el-col :span="16">
+        <el-row>
+          <el-col>
+            <img class="camera-img-box" :src="cInfo?.imgPath" />
+          </el-col>
+        </el-row>
+      </el-col>
+    </el-row> -->
+  </div>
 </template>
 
-<style>
+<style scoped>
+.camera-page {
+  height: 630px;
+}
+
+.waiting-rect {
+  margin-top: 130px;
+}
+
 .border-button {
+  width: 130px;
+  height: 45px !important;
   border: 1px solid rgb(243, 170, 120) !important;
   background-color: transparent !important;
   color: black !important;
@@ -181,11 +224,16 @@ async function requestRemoteSetting() {
   font-size: 18px;
   color: rgb(237, 125, 48);
 }
+.camera-content {
+  display: flex;
+  margin-top: 30px;
+  height: 560px;
+}
 
 .camera-img-box {
-  margin-top: 10px;
-  max-height: 300px;
-  max-width: 300px;
+  margin: 10px 0 0 50px;
+  height: 300px;
+  width: auto;
   padding: 4px;
   border: 1px solid #ccc;
 }

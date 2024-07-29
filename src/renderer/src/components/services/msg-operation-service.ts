@@ -1,4 +1,4 @@
-import { initMQTT, pMQTT } from '@src/utils/mqtt'
+import { MQTT } from '@src/utils/mqttClient'
 import { CameraOperationMsg, CameraRespMsg, CameraRequestParameters } from '@src/types/cameraTypes'
 import { SendCommandToCameraService } from './send-command-to-camera.service'
 
@@ -8,14 +8,14 @@ export class CloudOperationService {
   userName: string = ''
 
   receiveMqttMsg() {
-    initMQTT(this.userName)
-    if (!pMQTT) {
-      console.log('MQTT init error')
-    }
-    const message = ''
-    const messageString = message.toString()
-    const cameraOperationMsg = JSON.parse(messageString) as CameraOperationMsg
-    return cameraOperationMsg
+    // initMQTT(this.userName)
+    // if (!pMQTT) {
+    //   console.log('MQTT init error')
+    // }
+    // const message = ''
+    // const messageString = message.toString()
+    // const cameraOperationMsg = JSON.parse(messageString) as CameraOperationMsg
+    // return cameraOperationMsg
   }
 
   sendCameraMsgToCloud() {

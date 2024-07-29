@@ -4,69 +4,62 @@ import { useRouter } from 'vue-router'
 import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus'
 import emitter from '@src/utils/emitter'
-import { loginInfo, userInfo } from '@src/types/userTypes'
-import { SendCommandToCameraService } from '../services/send-command-to-camera.service'
-import { MQTT } from '@src/utils/mqttClient'
+import { LoginInfo, LoginResp, UserInfo } from '@src/types/userTypes'
 import { authService } from '@src//utils/authService'
 import { useI18n } from 'vue-i18n'
-
+import { auth } from '@src/utils/apiRequest'
+import { error } from 'console'
 
 const labelPosition = ref('top')
 const router = useRouter()
 const { t } = useI18n()
-const formLabelAlign = reactive<loginInfo>({
-  userName: '',
-  password: ''
+const formLabelAlign = reactive<LoginInfo>({
+  username: 'test_user',
+  password: 'test_password'
 })
 
 ipcRenderer.on('login', (_event, result) => {
   ElMessage.success(result)
   emitter.emit('login-event', 'test')
-  router.push('/Camera')
 })
 
-// function checkEmpty(): boolean {
-//   return formLabelAlign.userName!='' && formLabelAlign.password!=''
-// }
+function checkEmpty(): boolean {
+  return formLabelAlign.username != '' && formLabelAlign.password != ''
+}
 
-// function check():boolean {
-//   if(!checkEmpty()){
-//     ElMessage.error('Username and Password cannot be empty!')
-//     return false;
-//   }
-//   return true;
-// }
+function check(): boolean {
+  if (!checkEmpty()) {
+    ElMessage.error('Username and Password cannot be empty!')
+    return false
+  }
+  return true
+}
 
 async function login() {
-  //if(check()){
-  // const response=await auth(formLabelAlign)
-  // console.log(response)
-  const aService = new authService()
-  const user: userInfo = {
-    userName: 'hello',
-    token: 'world'
+  if (check()) {
+    // const loginResp: LoginResp = await auth(formLabelAlign)
+    // console.log(loginResp.message)
+    // if (loginResp.message != 'OK') {
+    //   throw error('Login failed')
+    // }
+    // const userInfo: UserInfo = {
+    //   username: formLabelAlign.username,
+    //   token: loginResp.data.token
+    // }
+    // const aService = new authService()
+    // aService.save(userInfo)
+    // emitter.emit('login-event')
+    router.push('/Camera')
   }
-  aService.save(user)
-  emitter.emit('login-event', 'test')
-  router.push('amera')
-  //}
 }
 
 const onSubmit = async () => {
   await login()
 }
-
-function testmqtt() {
-  const emqt = new MQTT('emqx_test')
-  emqt.createConnection()
-  emqt.topicSubscribe()
-}
-
 </script>
 <template>
   <el-card class="login-card" shadow="hover">
     <el-row :gutter="20">
-      <div class="grid-content" />
       <el-col :span="12" class="img-box">
         <img src="../../assets/login.png" style="max-width: 200px" />
       </el-col>
@@ -77,16 +70,25 @@ function testmqtt() {
               <span class="login-title">{{ t('logIn') }}</span>
             </el-col>
           </el-row>
-          <el-form :label-position="labelPosition" label-width="100px" :model="formLabelAlign" style="max-width: 460px">
+          <el-form
+            :label-position="labelPosition"
+            label-width="100px"
+            :model="formLabelAlign"
+            style="max-width: 460px"
+          >
             <el-form-item :label="t('userName')" class="input-label">
-              <el-input v-model="formLabelAlign.userName" />
+              <el-input v-model="formLabelAlign.username" />
             </el-form-item>
             <el-form-item :label="t('password')" class="input-label">
-              <el-input v-model="formLabelAlign.password" type="password" show-password autocomplete="off" />
+              <el-input
+                v-model="formLabelAlign.password"
+                type="password"
+                show-password
+                autocomplete="off"
+              />
             </el-form-item>
             <el-form-item>
               <el-button type="danger" @click="onSubmit">{{ t('loginIn') }}</el-button>
-              <el-button @click="testmqtt">test</el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -104,10 +106,12 @@ function testmqtt() {
   display: flex !important;
   justify-content: center;
   align-items: center;
+  margin-top: 10%;
 }
 
 .login-card {
   width: 99%;
+  height: 630px;
   /* margin:5px; */
   background-color: rgb(253, 242, 235) !important;
 }
@@ -115,6 +119,7 @@ function testmqtt() {
 .login-form {
   background-color: rgb(252, 255, 250) !important;
   border-bottom: 2px solid rgb(247, 220, 228) !important;
+  margin: 130px 0 0 0;
 }
 
 .login-title {
@@ -154,12 +159,6 @@ function testmqtt() {
   vertical-align: middle;
   border-radius: 4px;
   /* border: 1px solid grey; */
-}
-
-.grid-content {
-  border-radius: 1px;
-  min-height: 5px;
-  justify-content: center;
 }
 
 b {

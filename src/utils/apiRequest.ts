@@ -1,13 +1,13 @@
 import { HttpClient } from './httpClient'
-import { loginInfo, axiosConfig } from '../types/userTypes'
-
-export async function auth(lInfo: loginInfo): Promise<any> {
-  const config: axiosConfig = {
-    baseURL: import.meta.env.VITE_HTTP_SERVER_URL
+import { AxiosConfig } from '../types/userTypes'
+import { LoginInfo, LoginResp } from '@src/types/userTypes'
+export async function auth(lInfo: LoginInfo): Promise<any> {
+  const config: AxiosConfig = {
+    baseURL: import.meta.env.VITE_API_URL
   }
   const client = new HttpClient(config)
-  const response = await client.post('/api/login', {
-    userName: lInfo.userName,
+  const response: LoginResp = await client.post('/user/login', {
+    username: lInfo.username,
     password: lInfo.password
   })
   return response

@@ -1,4 +1,4 @@
-import { axiosConfig } from '@src/types/userTypes'
+import { AxiosConfig } from '@src/types/userTypes'
 import { HttpClient } from '@src/utils/httpClient'
 
 export class NotionficationCloudService {
@@ -6,7 +6,7 @@ export class NotionficationCloudService {
 
   private cloudUrl = import.meta.env.VITE_API_URL
 
-  config: axiosConfig = {
+  config: AxiosConfig = {
     baseURL: this.cloudUrl
   }
   httpClient: HttpClient = new HttpClient(this.config)
