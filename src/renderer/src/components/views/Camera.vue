@@ -8,10 +8,10 @@ import { MQTT } from '@src/utils/mqttClient'
 import { userInfo } from 'os'
 const cInfo = ref<CameraInfo>()
 const rInfo = ref<RemoterInfo>()
-const isAlertMessageBoxVisible = ref(false)
+const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false)
-const isRemoterButtonDisabled = ref(false)
-const isCameraButtonDisabled = ref(false)
+const isRemoterButtonDisabled = ref(false)//禁用远程控制
+const isCameraButtonDisabled = ref(false) //禁用连接相机
 const { t } = useI18n()
 const sendMsgToCloudService = new SendMsgToCloudService()
 
@@ -41,7 +41,6 @@ function setCameraInfo() {
 }
 
 async function cameraConnection() {
-  console.log('processPath', process.cwd())
   isCameraButtonDisabled.value = true
   cameraInfoInit()
   remoterInfoInit()

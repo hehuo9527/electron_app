@@ -7,7 +7,7 @@ import emitter from '@src/utils/emitter'
 import { LoginInfo, LoginResp, UserInfo } from '@src/types/userTypes'
 import { AuthService } from '@src//utils/authService'
 import { useI18n } from 'vue-i18n'
-import { auth } from '../services/apiRequest'
+import { auth } from '../services/auth.service'
 import { error } from 'console'
 
 const labelPosition = ref('top')

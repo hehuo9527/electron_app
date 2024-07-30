@@ -13,6 +13,6 @@
     "pleaseKeepU":"请保持相机正在USB连接",
     "camera":"相机：",
     "status":"状态：",
-    "clientId":"客户端ID：",
-    "remoterId":"远程ID："
+    "clientId":"客户端ID:",
+    "remoterId":"远程ID:"
 }
