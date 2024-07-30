@@ -1,6 +1,6 @@
 import { UserInfo } from 'src/types/userTypes'
 
-export class authService {
+export class AuthService {
   save(uInfo: UserInfo) {
     localStorage.setItem('userInfo', JSON.stringify(uInfo))
   }

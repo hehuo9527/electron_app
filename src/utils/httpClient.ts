@@ -8,14 +8,14 @@ export class HttpClient {
     this.axiosInstance = axios.create({
       baseURL: config.baseURL,
       timeout: config.timeout || 300 * 1000,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      headers: config.headers || { 'Content-Type': 'application/x-www-form-urlencoded' }
     })
   }
 
   // GET
-  async get(url: string, params?: any): Promise<any> {
+  async get(path: string, params?: any): Promise<any> {
     try {
-      const response = await this.axiosInstance.get(url, { params })
+      const response = await this.axiosInstance.get(path, { params })
       return response.data
     } catch (error) {
       console.error('GET请求错误:', error)
@@ -24,9 +24,9 @@ export class HttpClient {
   }
 
   // POST
-  async post(url: string, data?: any): Promise<any> {
+  async post(path: string, data?: any): Promise<any> {
     try {
-      const response = await this.axiosInstance.post(url, qs.stringify(data))
+      const response = await this.axiosInstance.post(path, qs.stringify(data))
       return response.data
     } catch (error) {
       console.error('POST请求错误:', error)
@@ -35,9 +35,9 @@ export class HttpClient {
   }
 
   // Delete
-  async delete(url: string, data?: any): Promise<any> {
+  async delete(path: string, data?: any): Promise<any> {
     try {
-      const response = await this.axiosInstance.delete(url, data)
+      const response = await this.axiosInstance.delete(path, data)
       return response.data
     } catch (error) {
       console.error('delete请求错误:', error)
@@ -46,9 +46,9 @@ export class HttpClient {
   }
 
   // PUT
-  async put(url: string, data?: any): Promise<any> {
+  async put(path: string, data?: any): Promise<any> {
     try {
-      const response = await this.axiosInstance.put(url, data)
+      const response = await this.axiosInstance.put(path, data)
       return response.data
     } catch (error) {
       console.error('PUT请求错误:', error)

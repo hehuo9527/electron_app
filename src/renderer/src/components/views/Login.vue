@@ -5,9 +5,9 @@ import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus'
 import emitter from '@src/utils/emitter'
 import { LoginInfo, LoginResp, UserInfo } from '@src/types/userTypes'
-import { authService } from '@src//utils/authService'
+import { AuthService } from '@src//utils/authService'
 import { useI18n } from 'vue-i18n'
-import { auth } from '@src/utils/apiRequest'
+import { auth } from '../services/apiRequest'
 import { error } from 'console'
 
 const labelPosition = ref('top')
@@ -37,18 +37,18 @@ function check(): boolean {
 
 async function login() {
   if (check()) {
-    // const loginResp: LoginResp = await auth(formLabelAlign)
-    // console.log(loginResp.message)
-    // if (loginResp.message != 'OK') {
-    //   throw error('Login failed')
-    // }
-    // const userInfo: UserInfo = {
-    //   username: formLabelAlign.username,
-    //   token: loginResp.data.token
-    // }
-    // const aService = new authService()
-    // aService.save(userInfo)
-    // emitter.emit('login-event')
+    const loginResp: LoginResp = await auth(formLabelAlign)
+    console.log(loginResp.message)
+    if (loginResp.message != 'OK') {
+      throw error('Login failed')
+    }
+    const userInfo: UserInfo = {
+      username: formLabelAlign.username,
+      token: loginResp.data.token
+    }
+    const aService = new AuthService()
+    aService.save(userInfo)
+    emitter.emit('login-event')
     router.push('/Camera')
   }
 }

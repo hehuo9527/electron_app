@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import { CameraInfo } from '@src/types/cameraTypes'
 import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
-
+import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
+import { MQTT } from '@src/utils/mqttClient'
+import { userInfo } from 'os'
 const cInfo = ref<CameraInfo>()
 const rInfo = ref<RemoterInfo>()
 const isAlertMessageBoxVisible = ref(false)
@@ -11,14 +13,7 @@ const isMessageBoxVisible = ref(false)
 const isRemoterButtonDisabled = ref(false)
 const isCameraButtonDisabled = ref(false)
 const { t } = useI18n()
-
-async function waitFiveSeconds(): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, 1000)
-  })
-}
+const sendMsgToCloudService = new SendMsgToCloudService()
 
 function cameraInfoInit() {
   cInfo.value = {
@@ -52,7 +47,7 @@ async function cameraConnection() {
   remoterInfoInit()
   isAlertMessageBoxVisible.value = true
   isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
-  await waitFiveSeconds()
+
   setCameraInfo()
   isAlertMessageBoxVisible.value = false
   isCameraButtonDisabled.value = false
@@ -61,12 +56,20 @@ async function cameraConnection() {
 
 async function requestRemoteSetting() {
   isRemoterButtonDisabled.value = true
-  rInfo.value = {
-    remoterId: 'crsp-0001',
-    status: 'Remote Setting'
+  // rInfo.value = {
+  //   camera_id: 'crsp-0001',
+  //   status: 'Remote Setting'
+  // }
+  const req_create_ticket = {
+    camera_id: 'I7M4 (123456678)',
+    description: 'help to do something'
   }
-  await waitFiveSeconds()
-  rInfo.value.status = 'Remote Setting Completed'
+  const resp = await sendMsgToCloudService.createTicket(req_create_ticket)
+  // connect mqtt
+  const mqtt = new MQTT('test')
+  mqtt.clientId = String(resp.data.ticket_id)
+  mqtt.createConnection()
+  // rInfo.value.status = 'Remote Setting Completed'
   isRemoterButtonDisabled.value = false
 }
 </script>
@@ -98,7 +101,7 @@ async function requestRemoteSetting() {
     <el-row v-if="isAlertMessageBoxVisible" class="waiting-rect">
       <div />
       <el-col style="text-align: center">
-        <div class="alert-message-box" style="box-shadow: var(--el-box-shadow-lighter)">
+        <div class="alert-message-box">
           <div class="title">{{ t('cameraConnecting') }}</div>
           <div class="message">{{ t('pleaseKeepU') }}</div>
         </div>
@@ -120,7 +123,7 @@ async function requestRemoteSetting() {
             >{{ cInfo?.clientId }}
           </p>
         </div>
-        <div class="message-box" style="margin-top: 16px">
+        <div class="message-box">
           <p>
             <b>{{ t('remoterId') }}</b
             >{{ rInfo?.remoterId }}
@@ -135,50 +138,6 @@ async function requestRemoteSetting() {
         <img class="camera-img-box" :src="cInfo?.imgPath" />
       </div>
     </div>
-    <!-- <el-row v-if="isMessageBoxVisible" class="camera-content">
-      <div />
-      <el-col :span="8">
-        <el-row>
-          <el-col>
-            <div class="message-box">
-              <p>
-                <b>{{ t('camera') }}</b
-                >{{ cInfo?.camera }}
-              </p>
-              <p>
-                <b>{{ t('status') }}</b
-                >{{ cInfo?.status }}
-              </p>
-              <p>
-                <b>{{ t('clientId') }}</b
-                >{{ cInfo?.clientId }}
-              </p>
-            </div>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col>
-            <div class="message-box" style="margin-top: 16px">
-              <p>
-                <b>{{ t('remoterId') }}</b
-                >{{ rInfo?.remoterId }}
-              </p>
-              <p>
-                <b>{{ t('status') }}</b
-                >{{ rInfo?.status }}
-              </p>
-            </div>
-          </el-col>
-        </el-row>
-      </el-col>
-      <el-col :span="16">
-        <el-row>
-          <el-col>
-            <img class="camera-img-box" :src="cInfo?.imgPath" />
-          </el-col>
-        </el-row>
-      </el-col>
-    </el-row> -->
   </div>
 </template>
 
@@ -227,14 +186,22 @@ async function requestRemoteSetting() {
 .camera-content {
   display: flex;
   margin-top: 30px;
-  height: 560px;
+  height: 500px;
 }
-
-.camera-img-box {
-  margin: 10px 0 0 50px;
-  height: 300px;
+.camera-content-left {
+  display: flex;
+  flex-direction: column;
+  margin: 0, 0, 0, 20px;
+  width: 350px;
+}
+.camera-content-right {
   width: auto;
-  padding: 4px;
+  box-sizing: border-box;
+  margin: 10px 0 0 100px;
+}
+.camera-img-box {
+  height: 100%;
+  width: 100%;
   border: 1px solid #ccc;
 }
 
@@ -245,7 +212,11 @@ b {
 .message-box {
   border: 1px solid rgb(220, 220, 220);
   padding: 10px;
-  margin-top: 10px;
+  width: 350px;
+  margin-top: 80px;
   font-size: 18px;
+}
+.message-box:last-child {
+  margin-top: 80px;
 }
 </style>
