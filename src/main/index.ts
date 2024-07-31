@@ -1,7 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { wsSend } from './external'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -52,7 +51,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.sony.csc')
-  ipcMain.handle('ws-send-message', wsSend)
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils

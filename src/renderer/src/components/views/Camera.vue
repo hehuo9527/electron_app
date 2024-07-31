@@ -1,39 +1,38 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CameraInfo } from '@src/types/cameraTypes'
+import { CameraInfo, CameraOperationReqMsg, CameraRespMsg } from '@src/types/cameraTypes'
 import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
 import { MQTT } from '@src/utils/mqttClient'
 import { userInfo } from 'os'
-const cInfo = ref<CameraInfo>()
-const rInfo = ref<RemoterInfo>()
+import { ReadyTicketResp } from '@src/types/cloudInfoTypes'
+import WebSocketService from '../services/send-command-to-camera.service'
+import { json } from 'stream/consumers'
+import { OBSClient } from '@src/utils/obsClient'
+const cInfo = ref<CameraInfo>({
+  camera: '',
+  status: '',
+  clientId: '',
+  imgPath: ''
+})
+const rInfo = ref<RemoterInfo>({
+  remoterId: '...',
+  status: 'Remote Pairing...'
+})
 const isAlertMessageBoxVisible = ref(false) //连接相机等待框
-const isMessageBoxVisible = ref(false)
-const isRemoterButtonDisabled = ref(false)//禁用远程控制
+const isMessageBoxVisible = ref(false) //相机信息显示
+const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
+let ws_camera: WebSocketService
+let ws_obs: OBSClient
 const { t } = useI18n()
 const sendMsgToCloudService = new SendMsgToCloudService()
 
-function cameraInfoInit() {
-  cInfo.value = {
-    camera: '',
-    status: '',
-    clientId: '',
-    imgPath: ''
-  }
-}
-
-function remoterInfoInit() {
-  rInfo.value = {
-    remoterId: '...',
-    status: 'Remote Pairing...'
-  }
-}
-
 function setCameraInfo() {
+  // update camera info and get a picture
   cInfo.value = {
-    camera: 'A7M4-D5464748',
+    camera: 'A7M4-123456678',
     status: 'Connected',
     clientId: 'crsu-0001',
     imgPath: '/src/assets/1.jpg'
@@ -41,16 +40,32 @@ function setCameraInfo() {
 }
 
 async function cameraConnection() {
-  isCameraButtonDisabled.value = true
-  cameraInfoInit()
-  remoterInfoInit()
+  // isCameraButtonDisabled.value = true
+  isMessageBoxVisible.value = false
   isAlertMessageBoxVisible.value = true
-  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
-
-  setCameraInfo()
-  isAlertMessageBoxVisible.value = false
-  isCameraButtonDisabled.value = false
-  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
+  ws_camera = new WebSocketService(`localhost:3333`)
+  const connectCommand: CameraOperationReqMsg = {
+    name: 'ConnectCamera',
+    val: 1
+  }
+  ws_camera.sendMessage(connectCommand)
+  ws_camera.client.onmessage = function (evt) {
+    const ws_msg = evt.data as CameraRespMsg
+    switch (ws_msg.name) {
+      case 'ConnectCamera':
+        console.log('process connect to camera')
+        cInfo.value.status = ws_msg.status
+        setCameraInfo()
+        // TODO get image from obs
+        isAlertMessageBoxVisible.value = false
+        isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait
+        isCameraButtonDisabled.value = false
+        break
+      default:
+        console.log('process send msg to cloud')
+        break
+    }
+  }
 }
 
 async function requestRemoteSetting() {
@@ -63,11 +78,21 @@ async function requestRemoteSetting() {
     camera_id: 'I7M4 (123456678)',
     description: 'help to do something'
   }
-  const resp = await sendMsgToCloudService.createTicket(req_create_ticket)
+  const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
+  let is_ticket_ready: ReadyTicketResp
+  if (ticket_resp.message == 'OK') {
+    is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
+    if (is_ticket_ready.message !== 'OK') {
+      console.log('ticket is not ready')
+    }
+  }
   // connect mqtt
-  const mqtt = new MQTT('test')
-  mqtt.clientId = String(resp.data.ticket_id)
+  const mqtt = new MQTT('test_user')
+  mqtt.clientId = String(ticket_resp.data.ticket_id)
+  cInfo.value.clientId = String(ticket_resp.data.ticket_id)
+  mqtt.topic = ticket_resp.data.topic
   mqtt.createConnection()
+  mqtt.topicSubscribe()
   // rInfo.value.status = 'Remote Setting Completed'
   isRemoterButtonDisabled.value = false
 }

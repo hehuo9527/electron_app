@@ -5,20 +5,14 @@ export interface CameraInfo {
   imgPath: string
 }
 
-export interface CameraRequestParameters {
-  prop: string
-  type: string
-  option?: number | string
-}
-
 export interface CameraRespMsg {
-  prop: string
+  name: string
   status: string
   message: string
 }
 
-export interface CameraOperationMsg {
-  operation: string
+export interface CameraOperationReqMsg {
   name: string
-  val?: string
+  operation?: string
+  val?: string | number
 }

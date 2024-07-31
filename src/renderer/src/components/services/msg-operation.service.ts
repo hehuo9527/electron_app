@@ -1,9 +1,8 @@
 import { MQTT } from '@src/utils/mqttClient'
-import { CameraOperationMsg, CameraRespMsg, CameraRequestParameters } from '@src/types/cameraTypes'
-import { SendCommandToCameraService } from './send-command-to-camera.service'
+import { CameraRespMsg } from '@src/types/cameraTypes'
 
 export class CloudOperationService {
-  constructor(private sendCommandToCameraService: SendCommandToCameraService) {}
+  constructor() {}
 
   userName: string = ''
 
@@ -15,8 +14,7 @@ export class CloudOperationService {
   sendCommandToCamera() {
     // TODO send command to camera
     const cameraRequestParameters = { prop: '', type: '' }
-    this.sendCommandToCameraService.SendCommandToCamera(cameraRequestParameters)
-    const cameraRespMsg: CameraRespMsg = { prop: '', message: '', status: 'OK' }
+    const cameraRespMsg: CameraRespMsg = { name: '', message: '', status: 'OK' }
     return cameraRespMsg
   }
 }

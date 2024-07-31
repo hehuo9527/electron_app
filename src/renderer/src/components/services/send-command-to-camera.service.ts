@@ -1,19 +1,18 @@
-import { AxiosConfig } from '@src/types/userTypes'
-import { HttpClient } from '@src/utils/httpClient'
-
-export class SendCommandToCameraService {
-  private cameraServerURL = import.meta.env.VITE_CAMERA_SDK_SERVER_URL
-
-  config: AxiosConfig = {
-    baseURL: this.cameraServerURL
+export default class WebSocketService {
+  url = ''
+  client: WebSocket
+  messageListeners = []
+  constructor(url) {
+    this.url = url
+    this.client = new WebSocket(`ws://${this.url}`)
   }
 
-  httpClient: HttpClient = new HttpClient(this.config)
-
-  constructor() {}
-
-  SendCommandToCamera(data: any) {
-    console.log(data, this.cameraServerURL)
-    // this.httpClient.post(this.cameraServerURL, data)
+  async sendMessage(message) {
+    const json_msg = JSON.stringify(message)
+    if (!this.client || this.client.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not open. Cannot send message.')
+      return
+    }
+    this.client.send(json_msg)
   }
 }
