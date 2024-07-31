@@ -2,8 +2,11 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import SocketClient from '../utils/socket-client'
+import { initializeSocketClient, setupIpcHandlers } from './ipc-handle'
 
-function createWindow(): void {
+let socketClient: SocketClient
+function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -35,6 +38,7 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  return mainWindow
 }
 
 // This method will be called when Electron has finished
@@ -54,8 +58,9 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  createWindow()
-
+  const mainWindow = createWindow()
+  socketClient = initializeSocketClient('localhost', 8080, mainWindow) // 替换为你的服务器地址和端口
+  setupIpcHandlers(socketClient)
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Versions from './components/Versions.vue'
 import OBSWebSocket, { EventSubscription, OBSEventTypes, OBSRequestTypes } from 'obs-websocket-js'
+
 const obs = new OBSWebSocket()
 const ipcHandle = () => window.electron.ipcRenderer.send('ping')
 
@@ -41,7 +42,11 @@ async function ObsTest() {
     console.error('Failed to connect', error)
   }
 }
-async function SocketTest() {}
+
+async function SocketTest() {
+  console.log('111')
+  window.api.sendMessage('hahah vue')
+}
 </script>
 
 <template>

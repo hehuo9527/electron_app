@@ -1,37 +1,39 @@
 import socket
 
 def start_server():
-    # 创建一个 TCP/IP 套接字
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
-    # 绑定套接字到地址和端口
-    server_address = ('localhost', 8080)
-    print(f'Starting server on {server_address[0]} port {server_address[1]}')
-    server_socket.bind(server_address)
-    
-    # 监听传入的连接
+    host = 'localhost'
+    port = 8080
+    server_address = (host, port)
+
+    try:
+        server_socket.bind(server_address)
+        print(f"Server started on {host} port {port}")
+    except Exception as e:
+        print(f"Failed to bind server on {host} port {port}. Error: {e}")
+        return
+
     server_socket.listen(5)
-    
+    print("Waiting for a connection...")
+
     while True:
-        # 等待连接
-        print('Waiting for a connection...')
-        connection, client_address = server_socket.accept()
-        
+        connection, address = server_socket.accept()
+        print(f"Connected to {address}")
+
         try:
-            print(f'Connection from {client_address}')
-            
-            # 接收数据并回显
             while True:
-                data = connection.recv(1024)
+                data = connection.recv(1024).decode('utf-8')
                 if data:
-                    print(f'Received: {data.decode()}')
-                    connection.sendall(data)
+                    print(f"Received: {data}")
+                    data+=" love from serve"
+                    connection.sendall(data.encode('utf-8'))
                 else:
                     break
-                
+        except Exception as e:
+            print(f"Connection error: {e}")
         finally:
-            # 清理连接
             connection.close()
+            print(f"Connection to {address} closed")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start_server()
