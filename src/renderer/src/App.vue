@@ -5,7 +5,7 @@ const obs = new OBSWebSocket()
 const ipcHandle = () => window.electron.ipcRenderer.send('ping')
 
 function WsTest() {
-  let ws = new WebSocket('ws://localhost:8765')
+  let ws = new WebSocket('ws://localhost:8080')
 
   ws.onopen = function (evt) {
     console.log('Connection open ...')
@@ -41,6 +41,7 @@ async function ObsTest() {
     console.error('Failed to connect', error)
   }
 }
+async function SocketTest() {}
 </script>
 
 <template>
@@ -65,6 +66,9 @@ async function ObsTest() {
     </div>
     <div class="action">
       <a target="_blank" rel="noreferrer" @click="ObsTest">ObsTest</a>
+    </div>
+    <div class="action">
+      <a target="_blank" rel="noreferrer" @click="SocketTest">SocketTest</a>
     </div>
   </div>
   <Versions />
