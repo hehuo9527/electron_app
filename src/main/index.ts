@@ -1,7 +1,11 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-function createWindow(): void {
+import SocketClient from '../utils/socket-client'
+import { initializeSocketClient, setupIpcHandlers } from './ipc-handle'
+
+let socketClient: SocketClient
+function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -44,6 +48,7 @@ function createWindow(): void {
   ipcMain.on('close', () => {
     mainWindow.close()
   })
+  return mainWindow
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -59,7 +64,10 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  createWindow()
+  const mainWindow = createWindow()
+  // use socket client
+  socketClient = initializeSocketClient('localhost', 3333, mainWindow)
+  setupIpcHandlers(socketClient)
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

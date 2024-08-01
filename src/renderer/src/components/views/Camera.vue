@@ -24,7 +24,6 @@ const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
-let ws_camera: WebSocketService
 let ws_obs: OBSClient
 const { t } = useI18n()
 const sendMsgToCloudService = new SendMsgToCloudService()
@@ -43,12 +42,11 @@ async function cameraConnection() {
   // isCameraButtonDisabled.value = true
   isMessageBoxVisible.value = false
   isAlertMessageBoxVisible.value = true
-  ws_camera = new WebSocketService(`localhost:3333`)
   const connectCommand: CameraOperationReqMsg = {
     name: 'ConnectCamera',
     val: 1
   }
-  ws_camera.sendMessage(connectCommand)
+
   ws_camera.client.onmessage = function (evt) {
     const ws_msg = evt.data as CameraRespMsg
     switch (ws_msg.name) {
@@ -57,15 +55,17 @@ async function cameraConnection() {
         cInfo.value.status = ws_msg.status
         setCameraInfo()
         // TODO get image from obs
-        isAlertMessageBoxVisible.value = false
-        isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait
-        isCameraButtonDisabled.value = false
         break
       default:
         console.log('process send msg to cloud')
         break
     }
   }
+  setTimeout(() => {
+    isAlertMessageBoxVisible.value = false
+    isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait
+    isCameraButtonDisabled.value = false
+  }, 3000)
 }
 
 async function requestRemoteSetting() {
