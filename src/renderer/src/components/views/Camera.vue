@@ -47,20 +47,20 @@ async function cameraConnection() {
     val: 1
   }
 
-  ws_camera.client.onmessage = function (evt) {
-    const ws_msg = evt.data as CameraRespMsg
-    switch (ws_msg.name) {
-      case 'ConnectCamera':
-        console.log('process connect to camera')
-        cInfo.value.status = ws_msg.status
-        setCameraInfo()
-        // TODO get image from obs
-        break
-      default:
-        console.log('process send msg to cloud')
-        break
-    }
-  }
+  // ws_camera.client.onmessage = function (evt) {
+  //   const ws_msg = evt.data as CameraRespMsg
+  //   switch (ws_msg.name) {
+  //     case 'ConnectCamera':
+  //       console.log('process connect to camera')
+  //       cInfo.value.status = ws_msg.status
+  //       setCameraInfo()
+  //       // TODO get image from obs
+  //       break
+  //     default:
+  //       console.log('process send msg to cloud')
+  //       break
+  //   }
+  // }
   setTimeout(() => {
     isAlertMessageBoxVisible.value = false
     isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait

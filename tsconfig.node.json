@@ -5,6 +5,7 @@
     "noImplicitReturns": false,
     "composite": true,
     "types": ["electron-vite/node"],
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   }
 }

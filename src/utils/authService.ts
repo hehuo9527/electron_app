@@ -1,4 +1,4 @@
-import { UserInfo } from 'src/types/userTypes'
+import { UserInfo } from '../types/userTypes'
 
 export class AuthService {
   save(uInfo: UserInfo) {
