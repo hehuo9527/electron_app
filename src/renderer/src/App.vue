@@ -44,9 +44,12 @@ async function ObsTest() {
 }
 
 async function SocketTest() {
-  console.log('111')
   window.api.sendMessage('hahah vue')
+
 }
+window.api.onMessage((message) => {
+  console.log('Received message vue:', message);
+});
 </script>
 
 <template>

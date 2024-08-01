@@ -9,31 +9,7 @@ class SocketClient extends EventEmitter {
     super()
     this.host = host
     this.port = port
-    this.client = new net.Socket()
-
-    this.client.on('data', (data) => {
-      this.emit('message', data.toString())
-    })
-
-    this.client.on('error', (err) => {
-      this.emit('error', err)
-    })
-
-    this.client.on('close', () => {
-      this.emit('close')
-    })
-  }
-
-  connect() {
-    return new Promise<void>((resolve, reject) => {
-      this.client.connect(this.port, this.host, () => {
-        resolve()
-      })
-
-      this.client.on('error', (err) => {
-        reject(err)
-      })
-    })
+    this.client = net.connect(port,host)
   }
 
   send(message) {

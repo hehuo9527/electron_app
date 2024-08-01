@@ -8,28 +8,10 @@ export function initializeSocketClient(
 ) {
   const socketClient = new SocketClient(host, port)
 
-  socketClient
-    .connect()
-    .then(() => {
-      console.log('Connected to server')
-
-      socketClient.on('message', (message) => {
-        console.log('Received message:', message)
-        // 通过 IPC 发送消息到渲染进程
-        mainWindow.webContents.send('socket-message', message)
-      })
-
-      socketClient.on('error', (err) => {
-        console.error('Socket error:', err)
-      })
-
-      socketClient.on('close', () => {
-        console.log('Socket connection closed')
-      })
-    })
-    .catch((err) => {
-      console.error('Connection error:', err)
-    })
+  socketClient.client.on('data', (message) => {
+    // 通过 IPC 发送消息到渲染进程
+    mainWindow.webContents.send('socket-message', String(message))
+  })
 
   return socketClient
 }
