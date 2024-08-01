@@ -9,7 +9,7 @@ class SocketClient extends EventEmitter {
     super()
     this.host = host
     this.port = port
-    this.client = net.createConnection(port,host)
+    this.client = net.connect(port, host)
     this.client.on('data', (data) => {
       this.emit('message', data.toString())
     })
@@ -22,7 +22,6 @@ class SocketClient extends EventEmitter {
       this.emit('close')
     })
   }
-
 
   send(message) {
     this.client.write(message)

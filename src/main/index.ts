@@ -68,6 +68,9 @@ app.whenReady().then(() => {
   // use socket client
   socketClient = initializeSocketClient('localhost', 3333, mainWindow)
   setupIpcHandlers(socketClient)
+  socketClient.on('message', (data) => {
+    console.log('vue main.ts->', data)
+  })
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
