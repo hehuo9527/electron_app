@@ -38,7 +38,6 @@ function check(): boolean {
 async function login() {
   if (check()) {
     // const loginResp: LoginResp = await auth(formLabelAlign)
-    // console.log(loginResp.message)
     // if (loginResp.message != 'OK') {
     //   throw error('Login failed')
     // }

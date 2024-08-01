@@ -12,7 +12,6 @@ const aService = new AuthService()
 const { t } = useI18n()
 emitter.on('login-event', (value: any) => {
   const uInfo: UserInfo | null = aService.get()
-  console.log(uInfo)
   isUserDisable.value = true
 })
 function closeWindow() {

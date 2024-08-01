@@ -10,6 +10,7 @@ import { ReadyTicketResp } from '@src/types/cloudInfoTypes'
 import WebSocketService from '../services/send-command-to-camera.service'
 import { json } from 'stream/consumers'
 import { OBSClient } from '@src/utils/obsClient'
+import { da } from 'element-plus/es/locale'
 const cInfo = ref<CameraInfo>({
   camera: '',
   status: '',
@@ -49,7 +50,9 @@ async function cameraConnection() {
   setCameraInfo()
   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
 
-
+  window.api.onMessage((data) => {
+    console.log('data', data)
+  })
   setTimeout(() => {
     isAlertMessageBoxVisible.value = false
     isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait

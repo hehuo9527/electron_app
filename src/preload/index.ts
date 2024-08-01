@@ -5,7 +5,7 @@ import { ipcRenderer } from 'electron/renderer'
 // Custom APIs for renderer
 const api = {
   // wsSend: (args: string[]) => ipcRenderer.invoke('ws-send-message', args)
-  onMessage: (callback) => ipcRenderer.on('socket-message', (event, message) => callback(message)),
+  onMessage: (callback) => ipcRenderer.on('socketResp', (event, message) => callback(message)),
   sendMessage: (message) => ipcRenderer.send('send-message', message)
 }
 

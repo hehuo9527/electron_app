@@ -69,7 +69,7 @@ app.whenReady().then(() => {
   socketClient = initializeSocketClient('localhost', 3333, mainWindow)
   setupIpcHandlers(socketClient)
   socketClient.on('message', (data) => {
-    console.log('vue main.ts->', data)
+    mainWindow.webContents.send('socketResp', data)
   })
 
   app.on('activate', function () {

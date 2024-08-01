@@ -10,7 +10,6 @@ export class SendMsgToCloudService {
 
   constructor() {
     const userInfo = new AuthService().get()
-    console.log(JSON.stringify(userInfo))
     this.config = {
       baseURL: this.cloudUrl,
       headers: this.createHeaders(userInfo)
