@@ -9,8 +9,7 @@ class SocketClient extends EventEmitter {
     super()
     this.host = host
     this.port = port
-    this.client = new net.Socket()
-
+    this.client = net.createConnection(port,host)
     this.client.on('data', (data) => {
       this.emit('message', data.toString())
     })
@@ -24,17 +23,6 @@ class SocketClient extends EventEmitter {
     })
   }
 
-  connect() {
-    return new Promise<void>((resolve, reject) => {
-      this.client.connect(this.port, this.host, () => {
-        resolve()
-      })
-
-      this.client.on('error', (err) => {
-        reject(err)
-      })
-    })
-  }
 
   send(message) {
     this.client.write(message)

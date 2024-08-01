@@ -7,29 +7,29 @@ export function initializeSocketClient(
   mainWindow: Electron.BrowserWindow
 ) {
   const socketClient = new SocketClient(host, port)
+  console.log("host",host,"port",port)
+  // socketClient
+  //   .connect()
+  //   .then(() => {
+  //     console.log('Connected to server')
 
-  socketClient
-    .connect()
-    .then(() => {
-      console.log('Connected to server')
+  //     socketClient.on('message', (message) => {
+  //       console.log('Received message:', message)
+  //       // 通过 IPC 发送消息到渲染进程
+  //       mainWindow.webContents.send('socket-message', message)
+  //     })
 
-      socketClient.on('message', (message) => {
-        console.log('Received message:', message)
-        // 通过 IPC 发送消息到渲染进程
-        mainWindow.webContents.send('socket-message', message)
-      })
+  //     socketClient.on('error', (err) => {
+  //       console.error('Socket error:', err)
+  //     })
 
-      socketClient.on('error', (err) => {
-        console.error('Socket error:', err)
-      })
-
-      socketClient.on('close', () => {
-        console.log('Socket connection closed')
-      })
-    })
-    .catch((err) => {
-      console.error('Connection error:', err)
-    })
+  //     socketClient.on('close', () => {
+  //       console.log('Socket connection closed')
+  //     })
+  //   })
+  //   .catch((err) => {
+  //     console.error('Connection error:', err)
+  //   })
 
   return socketClient
 }
