@@ -66,7 +66,7 @@ app.whenReady().then(() => {
 
   const mainWindow = createWindow()
   // use socket client
-  socketClient = initializeSocketClient('localhost', 3333, mainWindow)
+  socketClient = initializeSocketClient('127.0.0.1', 3333, mainWindow)
   setupIpcHandlers(socketClient)
   socketClient.on('message', (data) => {
     mainWindow.webContents.send('socketResp', data)
