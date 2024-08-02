@@ -3,11 +3,12 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import SocketClient from '../utils/socket-client'
 import { initializeSocketClient, setupIpcHandlers } from './ipc-handle'
-
+import { startSDK } from './sdk-handle'
 let socketClient: SocketClient
+let mainWindow: BrowserWindow
 function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 700,
     autoHideMenuBar: true,
@@ -48,7 +49,6 @@ function createWindow() {
   ipcMain.on('close', () => {
     mainWindow.close()
   })
-  return mainWindow
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -64,14 +64,13 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  const mainWindow = createWindow()
-  // use socket client
-  socketClient = initializeSocketClient('127.0.0.1', 3333, mainWindow)
-  setupIpcHandlers(socketClient)
-  socketClient.on('message', (data) => {
-    mainWindow.webContents.send('socketResp', data)
-  })
+  createWindow()
 
+  // use socket client
+  ipcMain.on('startSDK', async () => {
+    startSDK()
+    initSDK()
+  })
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -90,3 +89,10 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+function initSDK() {
+  socketClient = initializeSocketClient('127.0.0.1', 3333, mainWindow)
+  setupIpcHandlers(socketClient)
+  socketClient.on('message', (data) => {
+    mainWindow.webContents.send('socketResp', data)
+  })
+}

@@ -5,12 +5,11 @@ import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
 import { MQTT } from '@src/utils/mqttClient'
-import { userInfo } from 'os'
 import { ReadyTicketResp } from '@src/types/cloudInfoTypes'
-import WebSocketService from '../services/send-command-to-camera.service'
-import { json } from 'stream/consumers'
 import { OBSClient } from '@src/utils/obsClient'
-import { da } from 'element-plus/es/locale'
+import mockImg from '@renderer/assets/mock-img.jpg'
+import { ipcRenderer } from 'electron'
+
 const cInfo = ref<CameraInfo>({
   camera: '',
   status: '',
@@ -35,10 +34,12 @@ function setCameraInfo() {
     camera: 'A7M4-123456678',
     status: 'Connected',
     clientId: 'crsu-0001',
-    imgPath: '/src/assets/1.jpg'
+    imgPath: mockImg
   }
 }
-
+function startSDK() {
+  ipcRenderer.send('startSDK')
+}
 async function cameraConnection() {
   // isCameraButtonDisabled.value = true
   isMessageBoxVisible.value = false
@@ -47,46 +48,51 @@ async function cameraConnection() {
     name: 'WhiteBalance',
     operation: 'GET'
   }
+  startSDK()
   setCameraInfo()
   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
 
-  window.api.onMessage((data) => {
-    console.log('data', data)
-  })
-  setTimeout(() => {
-    isAlertMessageBoxVisible.value = false
-    isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait
-    isCameraButtonDisabled.value = false
-  }, 3000)
+  isAlertMessageBoxVisible.value = false
+  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait
+  isCameraButtonDisabled.value = false
 }
 
+window.api.onMessage((data) => {
+  console.log('data', data)
+})
 async function requestRemoteSetting() {
-  isRemoterButtonDisabled.value = true
+  const WhiteBalanceCommand: CameraOperationReqMsg = {
+    name: 'WhiteBalance',
+    operation: 'GET'
+  }
+  window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
+
+  // isRemoterButtonDisabled.value = true
   // rInfo.value = {
-  //   camera_id: 'crsp-0001',
+  //   remoterId: 'crsp-0001',
   //   status: 'Remote Setting'
   // }
-  const req_create_ticket = {
-    camera_id: 'I7M4 (123456678)',
-    description: 'help to do something'
-  }
-  const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
-  let is_ticket_ready: ReadyTicketResp
-  if (ticket_resp.message == 'OK') {
-    is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
-    if (is_ticket_ready.message !== 'OK') {
-      console.log('ticket is not ready')
-    }
-  }
-  // connect mqtt
-  const mqtt = new MQTT('test_user')
-  mqtt.clientId = String(ticket_resp.data.ticket_id)
-  cInfo.value.clientId = String(ticket_resp.data.ticket_id)
-  mqtt.topic = ticket_resp.data.topic
-  mqtt.createConnection()
-  mqtt.topicSubscribe()
-  // rInfo.value.status = 'Remote Setting Completed'
-  isRemoterButtonDisabled.value = false
+  // const req_create_ticket = {
+  //   camera_id: 'I7M4 (123456678)',
+  //   description: 'help to do something'
+  // }
+  // const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
+  // let is_ticket_ready: ReadyTicketResp
+  // if (ticket_resp.message == 'OK') {
+  //   is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
+  //   if (is_ticket_ready.message !== 'OK') {
+  //     console.log('ticket is not ready')
+  //   }
+  // }
+  // // connect mqtt
+  // const mqtt = new MQTT('test_user')
+  // mqtt.clientId = String(ticket_resp.data.ticket_id)
+  // cInfo.value.clientId = String(ticket_resp.data.ticket_id)
+  // mqtt.topic = ticket_resp.data.topic
+  // mqtt.createConnection()
+  // mqtt.topicSubscribe()
+  // // rInfo.value.status = 'Remote Setting Completed'
+  // isRemoterButtonDisabled.value = false
 }
 </script>
 <template>
@@ -151,7 +157,7 @@ async function requestRemoteSetting() {
         </div>
       </div>
       <div class="camera-content-right">
-        <img class="camera-img-box" :src="cInfo?.imgPath" />
+        <img alt="" class="camera-img-box" :src="cInfo.imgPath" />
       </div>
     </div>
   </div>

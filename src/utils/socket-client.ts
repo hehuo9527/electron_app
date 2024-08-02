@@ -13,14 +13,6 @@ class SocketClient extends EventEmitter {
     this.client.on('data', (data) => {
       this.emit('message', data.toString())
     })
-
-    this.client.on('error', (err) => {
-      this.emit('error', err)
-    })
-
-    this.client.on('close', () => {
-      this.emit('close')
-    })
   }
 
   send(message) {

@@ -8,7 +8,6 @@ export function initializeSocketClient(
 ) {
   const socketClient = new SocketClient(host, port)
 
-
   return socketClient
 }
 
