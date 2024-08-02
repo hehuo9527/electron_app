@@ -52,6 +52,7 @@
     "@vueuse/electron": "^10.9.0",
     "axios": "^1.6.8",
     "babel-eslint": "^10.1.0",
+    "electron": "^28.3.3",
     "electron-builder": "^24.9.1",
     "electron-devtools-installer": "^3.2.0",
     "electron-log": "^5.1.4",
