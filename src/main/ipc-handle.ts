@@ -7,7 +7,6 @@ export function initializeSocketClient(
   mainWindow: Electron.BrowserWindow
 ) {
   const socketClient = new SocketClient(host, port)
-
   return socketClient
 }
 

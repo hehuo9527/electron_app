@@ -2,7 +2,7 @@ import socket
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host = 'localhost'
+    host = '127.0.0.1'
     port = 3333
     server_address = (host, port)
 

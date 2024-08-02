@@ -1,60 +1,60 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { ipcRenderer } from 'electron'
-import { ElMessage } from 'element-plus'
-import emitter from '@src/utils/emitter'
-import { LoginInfo, LoginResp, UserInfo } from '@src/types/userTypes'
-import { AuthService } from '@src//utils/authService'
-import { useI18n } from 'vue-i18n'
-import { auth } from '../services/auth.service'
-import { error } from 'console'
+import { ref, reactive } from "vue";
+import { useRouter } from "vue-router";
+import { ipcRenderer } from "electron";
+import { ElMessage } from "element-plus";
+import emitter from "@src/utils/emitter";
+import { LoginInfo, LoginResp, UserInfo } from "@src/types/userTypes";
+import { AuthService } from "@src//utils/authService";
+import { useI18n } from "vue-i18n";
+import { auth } from "../services/auth.service";
+import { error } from "console";
 
-const labelPosition = ref('top')
-const router = useRouter()
-const { t } = useI18n()
+const labelPosition = ref("top");
+const router = useRouter();
+const { t } = useI18n();
 const formLabelAlign = reactive<LoginInfo>({
-  username: 'test_user',
-  password: 'test_password'
-})
+  username: "test_user",
+  password: "test_password",
+});
 
-ipcRenderer.on('login', (_event, result) => {
-  ElMessage.success(result)
-  emitter.emit('login-event', 'test')
-})
+ipcRenderer.on("login", (_event, result) => {
+  ElMessage.success(result);
+  emitter.emit("login-event", "test");
+});
 
 function checkEmpty(): boolean {
-  return formLabelAlign.username != '' && formLabelAlign.password != ''
+  return formLabelAlign.username != "" && formLabelAlign.password != "";
 }
 
 function check(): boolean {
   if (!checkEmpty()) {
-    ElMessage.error('Username and Password cannot be empty!')
-    return false
+    ElMessage.error("Username and Password cannot be empty!");
+    return false;
   }
-  return true
+  return true;
 }
 
 async function login() {
   if (check()) {
-    // const loginResp: LoginResp = await auth(formLabelAlign)
-    // if (loginResp.message != 'OK') {
-    //   throw error('Login failed')
-    // }
-    // const userInfo: UserInfo = {
-    //   username: formLabelAlign.username,
-    //   token: loginResp.data.token
-    // }
-    // const aService = new AuthService()
-    // aService.save(userInfo)
-    emitter.emit('login-event')
-    router.push('/Camera')
+    const loginResp: LoginResp = await auth(formLabelAlign);
+    if (loginResp.message != "OK") {
+      throw error("Login failed");
+    }
+    const userInfo: UserInfo = {
+      username: formLabelAlign.username,
+      token: loginResp.data.token,
+    };
+    const aService = new AuthService();
+    aService.save(userInfo);
+    emitter.emit("login-event");
+    router.push("/Camera");
   }
 }
 
 const onSubmit = async () => {
-  await login()
-}
+  await login();
+};
 </script>
 <template>
   <el-card class="login-card" shadow="hover">
@@ -66,7 +66,7 @@ const onSubmit = async () => {
         <el-card shadow="never" class="login-form">
           <el-row style="margin-bottom: 10px">
             <el-col>
-              <span class="login-title">{{ t('logIn') }}</span>
+              <span class="login-title">{{ t("logIn") }}</span>
             </el-col>
           </el-row>
           <el-form
@@ -87,7 +87,9 @@ const onSubmit = async () => {
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="danger" @click="onSubmit">{{ t('loginIn') }}</el-button>
+              <el-button type="danger" @click="onSubmit">{{
+                t("loginIn")
+              }}</el-button>
             </el-form-item>
           </el-form>
         </el-card>
