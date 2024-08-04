@@ -1,71 +1,101 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { CameraInfo, CameraOperationReqMsg, CameraRespMsg } from '@src/types/cameraTypes'
-import { RemoterInfo } from '@src/types/userTypes'
-import { useI18n } from 'vue-i18n'
-import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
-import { MQTT } from '@src/utils/mqttClient'
-import { ReadyTicketResp } from '@src/types/cloudInfoTypes'
-import { OBSClient } from '@src/utils/obsClient'
-import mockImg from '@renderer/assets/mock-img.jpg'
-import { ipcRenderer } from 'electron'
+import { ref } from "vue";
+import {
+  CameraInfo,
+  CameraOperationReqMsg,
+  CameraRespMsg,
+} from "@src/types/cameraTypes";
+import { RemoterInfo } from "@src/types/userTypes";
+import { useI18n } from "vue-i18n";
+import { SendMsgToCloudService } from "../services/send-msg-cloud.service";
+import { MQTT } from "@src/utils/mqttClient";
+import { ReadyTicketResp } from "@src/types/cloudInfoTypes";
+import { OBSClient } from "@src/utils/obsClient";
+import mockImg from "@renderer/assets/mock-img.jpg";
+import { ipcRenderer } from "electron";
+import OBSWebSocket from "obs-websocket-js";
 
 const cInfo = ref<CameraInfo>({
-  camera: '',
-  status: '',
-  clientId: '',
-  imgPath: ''
-})
+  camera: "",
+  status: "",
+  clientId: "",
+  imgPath: "",
+});
 const rInfo = ref<RemoterInfo>({
-  remoterId: '...',
-  status: 'Remote Pairing...'
-})
-const isAlertMessageBoxVisible = ref(false) //连接相机等待框
-const isMessageBoxVisible = ref(false) //相机信息显示
-const isRemoterButtonDisabled = ref(false) //禁用远程控制
-const isCameraButtonDisabled = ref(false) //禁用连接相机
-let ws_obs: OBSClient
-const { t } = useI18n()
-const sendMsgToCloudService = new SendMsgToCloudService()
+  remoterId: "...",
+  status: "Remote Pairing...",
+});
+const isAlertMessageBoxVisible = ref(false); //连接相机等待框
+const isMessageBoxVisible = ref(false); //相机信息显示
+const isRemoterButtonDisabled = ref(false); //禁用远程控制
+const isCameraButtonDisabled = ref(false); //禁用连接相机
+
+const { t } = useI18n();
+const sendMsgToCloudService = new SendMsgToCloudService();
 
 function setCameraInfo() {
   // update camera info and get a picture
   cInfo.value = {
-    camera: 'A7M4-123456678',
-    status: 'Connected',
-    clientId: 'crsu-0001',
-    imgPath: mockImg
-  }
+    camera: "A7M4-123456678",
+    status: "Connected",
+    clientId: "crsu-0001",
+    imgPath: "",
+  };
 }
+
 function startSDK() {
-  ipcRenderer.send('startSDK')
+  ipcRenderer.send("startSDK");
 }
+
 async function cameraConnection() {
   // isCameraButtonDisabled.value = true
-  isMessageBoxVisible.value = false
-  isAlertMessageBoxVisible.value = true
+  isMessageBoxVisible.value = false;
+  isAlertMessageBoxVisible.value = true;
   const WhiteBalanceCommand: CameraOperationReqMsg = {
-    name: 'WhiteBalance',
-    operation: 'GET'
-  }
-  startSDK()
-  setCameraInfo()
-  window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
+    name: "WhiteBalance",
+    operation: "GET",
+  };
+  startSDK();
+  setCameraInfo();
+  let ws_obs = new OBSClient();
+  // const { obsWebSocketVersion, negotiatedRpcVersion } = await ws_obs.connect(
+  //   "ws://192.168.1.23:4455",
+  //   "Hcs8Pczy4JVDfnR2",
+  //   {
+  //     rpcVersion: 1,
+  //   },
+  // );
 
-  isAlertMessageBoxVisible.value = false
-  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait
-  isCameraButtonDisabled.value = false
+  await ws_obs.connect("ws://192.168.1.23:4455", "Hcs8Pczy4JVDfnR2");
+  // console.log(
+  //   `Connected to server ${obsWebSocketVersion} (using RPC ${negotiatedRpcVersion})`,
+  // );
+  // ws_obs
+  //   .call("GetSourceScreenshot", {
+  //     sourceName: "显示器采集",
+  //     imageFormat: "png",
+  //   })
+  //   .then((data) => {
+  //     // console.log(data.imageData);
+  //     cInfo.value.imgPath = data.imageData;
+  //   });
+  cInfo.value.imgPath = (await ws_obs.getSourceScreenshot()).imageData;
+  // window.api.sendMessage(JSON.stringify(WhiteBalanceCommand));
+
+  isAlertMessageBoxVisible.value = false;
+  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value;
+  isCameraButtonDisabled.value = false;
 }
 
 window.api.onMessage((data) => {
-  console.log('data', data)
-})
+  console.log("data", data);
+});
 async function requestRemoteSetting() {
   const WhiteBalanceCommand: CameraOperationReqMsg = {
-    name: 'WhiteBalance',
-    operation: 'GET'
-  }
-  window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
+    name: "WhiteBalance",
+    operation: "GET",
+  };
+  window.api.sendMessage(JSON.stringify(WhiteBalanceCommand));
 
   // isRemoterButtonDisabled.value = true
   // rInfo.value = {
@@ -106,7 +136,7 @@ async function requestRemoteSetting() {
           class="border-button"
           :disabled="isCameraButtonDisabled"
           @click="cameraConnection"
-          >{{ t('cameraConnection') }}</el-button
+          >{{ t("cameraConnection") }}</el-button
         >
       </el-col>
       <el-col :span="12" style="text-align: right">
@@ -116,7 +146,7 @@ async function requestRemoteSetting() {
           class="border-button"
           :disabled="isRemoterButtonDisabled"
           @click="requestRemoteSetting"
-          >{{ t('requestRemoteSetting') }}</el-button
+          >{{ t("requestRemoteSetting") }}</el-button
         >
       </el-col>
     </el-row>
@@ -124,8 +154,8 @@ async function requestRemoteSetting() {
       <div />
       <el-col style="text-align: center">
         <div class="alert-message-box">
-          <div class="title">{{ t('cameraConnecting') }}</div>
-          <div class="message">{{ t('pleaseKeepU') }}</div>
+          <div class="title">{{ t("cameraConnecting") }}</div>
+          <div class="message">{{ t("pleaseKeepU") }}</div>
         </div>
       </el-col>
     </el-row>
@@ -133,31 +163,36 @@ async function requestRemoteSetting() {
       <div class="camera-content-left">
         <div class="message-box">
           <p>
-            <b>{{ t('camera') }}</b
+            <b>{{ t("camera") }}</b
             >{{ cInfo?.camera }}
           </p>
           <p>
-            <b>{{ t('status') }}</b
+            <b>{{ t("status") }}</b
             >{{ cInfo?.status }}
           </p>
           <p>
-            <b>{{ t('clientId') }}</b
+            <b>{{ t("clientId") }}</b
             >{{ cInfo?.clientId }}
           </p>
         </div>
         <div class="message-box">
           <p>
-            <b>{{ t('remoterId') }}</b
+            <b>{{ t("remoterId") }}</b
             >{{ rInfo?.remoterId }}
           </p>
           <p>
-            <b>{{ t('status') }}</b
+            <b>{{ t("status") }}</b
             >{{ rInfo?.status }}
           </p>
         </div>
       </div>
       <div class="camera-content-right">
-        <img alt="" class="camera-img-box" :src="cInfo.imgPath" />
+        <!-- <img :alt="" class="camera-img-box" /> -->
+        <img
+          :alt="cInfo.imgPath ? '显示的图片' : mockImg"
+          class="camera-img-box"
+          :src="cInfo.imgPath"
+        />
       </div>
     </div>
   </div>
