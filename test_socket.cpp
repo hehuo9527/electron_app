@@ -17,8 +17,8 @@ void handle_client(SOCKET client_socket) {
         if (bytes_received > 0) {
             std::string received_data(buffer);
             std::cout << "Received: " << received_data << std::endl;
-            received_data += " love from server";
-            send(client_socket, received_data.c_str(), received_data.size(), 0);
+            std::string send_msg = "{\"operation\":\"WhiteBalance\",\"value\":\"Cloudy\"}";
+            send(client_socket, send_msg.c_str(), received_data.size(), 0);
         }
         else {
             break;
@@ -77,8 +77,8 @@ void start_server() {
 
         std::cout << "Connected to " << inet_ntoa(client_address.sin_addr) << std::endl;
 
-        std::thread client_thread(handle_client, client_socket); // 使用 std::thread 创建新线程
-        client_thread.detach(); // 分离线程，以便它可以独立运行
+        std::thread client_thread(handle_client, client_socket);
+        client_thread.detach();
     }
 
     closesocket(server_socket);
