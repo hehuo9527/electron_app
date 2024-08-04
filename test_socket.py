@@ -37,4 +37,22 @@ def start_server():
             print(f"Connection to {address} closed")
 
 if __name__ == "__main__":
-    start_server()
+    # start_server()
+    s=socket.socket()
+    s.connect(("127.0.0.1",3333))
+    s.send('能发送消息吗'.encode('utf-8'))
+    ret_bytes=s.recv(2048)
+    print(str(ret_bytes))
+    import time
+    time.sleep(3)
+    data = b''
+    while True:
+        part = s.recv(10024)
+        data += part
+        if len(part) < 10024:
+            # This means that there is no more data left to receive
+            break
+    print(data.decode('utf-8'))
+
+
+

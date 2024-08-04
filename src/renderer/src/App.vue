@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import Titlebar from './components/views/Titlebar.vue'
-const router = useRouter()
-router.push('/Login')
+import { useRouter } from "vue-router";
+import Titlebar from "./components/views/Titlebar.vue";
+const router = useRouter();
+console.log(__dirname);
+router.push("/Login");
 </script>
 
 <template>

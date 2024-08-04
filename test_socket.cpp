@@ -18,7 +18,7 @@ void handle_client(SOCKET client_socket) {
             std::string received_data(buffer);
             std::cout << "Received: " << received_data << std::endl;
             std::string send_msg = "{\"operation\":\"WhiteBalance\",\"value\":\"Cloudy\"}";
-            send(client_socket, send_msg.c_str(), received_data.size(), 0);
+            send(client_socket, send_msg.c_str(), send_msg.size(), 0);
         }
         else {
             break;

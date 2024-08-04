@@ -88,7 +88,7 @@ async function cameraConnection() {
 }
 
 window.api.onMessage((data) => {
-  console.log("data", data);
+  console.log("data->", data);
 });
 async function requestRemoteSetting() {
   const WhiteBalanceCommand: CameraOperationReqMsg = {
