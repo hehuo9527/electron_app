@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include <thread>
+#include <thread> // 确保包含此头文件
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
