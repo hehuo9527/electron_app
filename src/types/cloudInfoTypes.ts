@@ -15,3 +15,16 @@ export interface ReadyTicketResp {
   data: Status
   message: string
 }
+
+export interface MQTTCommand {
+  operation: string
+  name: string
+  value?: string
+}
+
+export interface UpdateParameters {
+  ticket_id: string
+  operation: string
+  name: string
+  value: string
+}
