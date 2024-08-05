@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
-#include <thread> // 确保包含此头文件
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <thread>
+#include <cstring>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
-#pragma comment(lib, "ws2_32.lib")
-
-void handle_client(SOCKET client_socket) {
+void handle_client(int client_socket) {
     const std::string welcome_message = "connect success";
     send(client_socket, welcome_message.c_str(), welcome_message.size(), 0);
 
@@ -25,21 +25,14 @@ void handle_client(SOCKET client_socket) {
         }
     }
 
-    closesocket(client_socket);
+    close(client_socket);
     std::cout << "Connection closed" << std::endl;
 }
 
 void start_server() {
-    WSADATA wsa_data;
-    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
-        std::cerr << "WSAStartup failed" << std::endl;
-        return;
-    }
-
-    SOCKET server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == INVALID_SOCKET) {
+    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket == -1) {
         std::cerr << "Failed to create socket" << std::endl;
-        WSACleanup();
         return;
     }
 
@@ -48,19 +41,17 @@ void start_server() {
     server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
     server_address.sin_port = htons(3333);
 
-    if (bind(server_socket, (sockaddr*)&server_address, sizeof(server_address)) == SOCKET_ERROR) {
+    if (bind(server_socket, (sockaddr*)&server_address, sizeof(server_address)) == -1) {
         std::cerr << "Failed to bind server on 127.0.0.1 port 3333" << std::endl;
-        closesocket(server_socket);
-        WSACleanup();
+        close(server_socket);
         return;
     }
 
     std::cout << "Server started on 127.0.0.1 port 3333" << std::endl;
 
-    if (listen(server_socket, 5) == SOCKET_ERROR) {
+    if (listen(server_socket, 5) == -1) {
         std::cerr << "Failed to listen on socket" << std::endl;
-        closesocket(server_socket);
-        WSACleanup();
+        close(server_socket);
         return;
     }
 
@@ -68,9 +59,9 @@ void start_server() {
 
     while (true) {
         sockaddr_in client_address;
-        int client_address_len = sizeof(client_address);
-        SOCKET client_socket = accept(server_socket, (sockaddr*)&client_address, &client_address_len);
-        if (client_socket == INVALID_SOCKET) {
+        socklen_t client_address_len = sizeof(client_address);
+        int client_socket = accept(server_socket, (sockaddr*)&client_address, &client_address_len);
+        if (client_socket == -1) {
             std::cerr << "Failed to accept connection" << std::endl;
             continue;
         }
@@ -81,8 +72,7 @@ void start_server() {
         client_thread.detach();
     }
 
-    closesocket(server_socket);
-    WSACleanup();
+    close(server_socket);
 }
 
 int main() {

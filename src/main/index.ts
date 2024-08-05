@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain } from "electron";
-import { join } from "path";
+import path, { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import SocketClient from "../utils/socket-client";
 import { initializeSocketClient, setupIpcHandlers } from "./ipc-handle";
@@ -28,7 +28,7 @@ function createWindow() {
     mainWindow.show();
   });
 
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools();
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
@@ -70,7 +70,7 @@ app.whenReady().then(() => {
   console.log(process.env.NODE_ENV);
   // use socket client
   ipcMain.on("startSDK", async () => {
-    let process = startSDK();
+    let process = startSDK(mainWindow);
     if (process) {
       process.stdout?.on("data", (data) => {
         if (!initialized) {
@@ -103,6 +103,7 @@ function initSDK() {
   socketClient = initializeSocketClient("127.0.0.1", 3333, mainWindow);
   setupIpcHandlers(socketClient);
   socketClient.on("message", (data) => {
-    mainWindow.webContents.send("socketResp", data);
+    const root_path = path.resolve(__dirname, "../../");
+    mainWindow.webContents.send("socketResp", data + "  ->" + root_path);
   });
 }

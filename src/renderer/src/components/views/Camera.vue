@@ -39,7 +39,7 @@ function setCameraInfo() {
     camera: "A7M4-123456678",
     status: "Connected",
     clientId: "crsu-0001",
-    imgPath: "",
+    imgPath: mockImg,
   };
 }
 
@@ -57,7 +57,7 @@ async function cameraConnection() {
   };
   startSDK();
   setCameraInfo();
-  let ws_obs = new OBSClient();
+  // let ws_obs = new OBSClient();
   // const { obsWebSocketVersion, negotiatedRpcVersion } = await ws_obs.connect(
   //   "ws://192.168.1.23:4455",
   //   "Hcs8Pczy4JVDfnR2",
@@ -66,7 +66,7 @@ async function cameraConnection() {
   //   },
   // );
 
-  await ws_obs.connect("ws://192.168.1.23:4455", "Hcs8Pczy4JVDfnR2");
+  // await ws_obs.connect("ws://192.168.1.23:4455", "Hcs8Pczy4JVDfnR2");
   // console.log(
   //   `Connected to server ${obsWebSocketVersion} (using RPC ${negotiatedRpcVersion})`,
   // );
@@ -79,7 +79,7 @@ async function cameraConnection() {
   //     // console.log(data.imageData);
   //     cInfo.value.imgPath = data.imageData;
   //   });
-  cInfo.value.imgPath = (await ws_obs.getSourceScreenshot()).imageData;
+  // cInfo.value.imgPath = (await ws_obs.getSourceScreenshot()).imageData;
   // window.api.sendMessage(JSON.stringify(WhiteBalanceCommand));
 
   isAlertMessageBoxVisible.value = false;
@@ -88,7 +88,7 @@ async function cameraConnection() {
 }
 
 window.api.onMessage((data) => {
-  console.log("data", data);
+  console.log("data->", data);
 });
 async function requestRemoteSetting() {
   const WhiteBalanceCommand: CameraOperationReqMsg = {
@@ -115,7 +115,7 @@ async function requestRemoteSetting() {
   //   }
   // }
   // // connect mqtt
-  // const mqtt = new MQTT('test_user')
+  const mqtt = new MQTT("test_user");
   // mqtt.clientId = String(ticket_resp.data.ticket_id)
   // cInfo.value.clientId = String(ticket_resp.data.ticket_id)
   // mqtt.topic = ticket_resp.data.topic
