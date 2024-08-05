@@ -34,7 +34,7 @@ export class SendMsgToCloudService {
 
   async readyTicket(ready_ticket_id: number) {
     const req_body = { ticket_id: String(ready_ticket_id) }
-    const createTicketResp: ReadyTicketResp = await this.httpClient.post('/ticket/create', req_body)
+    const createTicketResp: ReadyTicketResp = await this.httpClient.post('/ticket/ready', req_body)
     return createTicketResp
   }
 }

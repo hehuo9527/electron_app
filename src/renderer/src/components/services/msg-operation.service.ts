@@ -5,6 +5,4 @@ export class CloudOperationService {
   constructor() {}
 
   userName: string = ''
-
-
 }

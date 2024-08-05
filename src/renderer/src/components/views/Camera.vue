@@ -9,6 +9,7 @@ import { ReadyTicketResp } from '@src/types/cloudInfoTypes'
 import { OBSClient } from '@src/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
+import mqtt from 'mqtt/*'
 
 const cInfo = ref<CameraInfo>({
   camera: '',
@@ -25,6 +26,7 @@ const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
 let ws_obs: OBSClient
+let e_mqtt: MQTT
 const { t } = useI18n()
 const sendMsgToCloudService = new SendMsgToCloudService()
 
@@ -41,7 +43,7 @@ function startSDK() {
   ipcRenderer.send('startSDK')
 }
 async function cameraConnection() {
-  // isCameraButtonDisabled.value = true
+  isCameraButtonDisabled.value = true
   isMessageBoxVisible.value = false
   isAlertMessageBoxVisible.value = true
   const WhiteBalanceCommand: CameraOperationReqMsg = {
@@ -53,46 +55,58 @@ async function cameraConnection() {
   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
 
   isAlertMessageBoxVisible.value = false
-  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value //wait
+  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
   isCameraButtonDisabled.value = false
 }
 
-window.api.onMessage((data) => {
-  console.log('data', data)
-})
 async function requestRemoteSetting() {
+  // window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
+  isRemoterButtonDisabled.value = true
+  rInfo.value = {
+    remoterId: 'crsp-0001',
+    status: 'Remote Setting'
+  }
+  const req_create_ticket = {
+    camera_id: 'I7M4 (123456678)',
+    description: 'help to do something'
+  }
+  const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
+  let is_ticket_ready: ReadyTicketResp
+  if (ticket_resp.message == 'OK') {
+    is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
+    if (is_ticket_ready.message !== 'OK') {
+      console.log('ticket is not ready')
+    }
+  }
+  // connect mqtt
+  e_mqtt = new MQTT('test_user')
+  console.log('ticket_resp', ticket_resp)
+  e_mqtt.clientId = String(ticket_resp.data.ticket_id)
+  e_mqtt.topic = ticket_resp.data.topic
+  cInfo.value.clientId = String(ticket_resp.data.ticket_id)
+  rInfo.value.status = 'Remote Setting Completed'
+  isRemoterButtonDisabled.value = false
+  ProcessMsg(e_mqtt)
+}
+
+function ProcessMsg(e_mqtt: MQTT) {
+  // listen mqtt
+  e_mqtt.createConnection()
+  e_mqtt.topicSubscribe()
+  e_mqtt.client.on('message', (topic, message) => {
+    console.log(`Received message ${message} from topic ${topic}`)
+  })
+  // send to SDK
   const WhiteBalanceCommand: CameraOperationReqMsg = {
     name: 'WhiteBalance',
     operation: 'GET'
   }
   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
-
-  // isRemoterButtonDisabled.value = true
-  // rInfo.value = {
-  //   remoterId: 'crsp-0001',
-  //   status: 'Remote Setting'
-  // }
-  // const req_create_ticket = {
-  //   camera_id: 'I7M4 (123456678)',
-  //   description: 'help to do something'
-  // }
-  // const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
-  // let is_ticket_ready: ReadyTicketResp
-  // if (ticket_resp.message == 'OK') {
-  //   is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
-  //   if (is_ticket_ready.message !== 'OK') {
-  //     console.log('ticket is not ready')
-  //   }
-  // }
-  // // connect mqtt
-  // const mqtt = new MQTT('test_user')
-  // mqtt.clientId = String(ticket_resp.data.ticket_id)
-  // cInfo.value.clientId = String(ticket_resp.data.ticket_id)
-  // mqtt.topic = ticket_resp.data.topic
-  // mqtt.createConnection()
-  // mqtt.topicSubscribe()
-  // // rInfo.value.status = 'Remote Setting Completed'
-  // isRemoterButtonDisabled.value = false
+}
+function UploadMsg() {
+  window.api.onMessage((data) => {
+    console.log('data', data)
+  })
 }
 </script>
 <template>

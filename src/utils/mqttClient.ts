@@ -22,13 +22,13 @@ export class MQTT {
   isConnect: boolean
 
   constructor(username: string) {
-    this.url = ``
+    this.url = `wss://${import.meta.env.VITE_MQTT_URL}/mqtt`
     this.clientId = `${username}-${uuidv4()}`
     this.topic = `${username}/${btoa(username)}`
     this.isConnect = false
   }
 
-  createConnection() {
+  async createConnection() {
     const options = {
       clean: true,
       clientId: this.clientId,
@@ -55,6 +55,7 @@ export class MQTT {
   }
 
   topicSubscribe() {
+    console.log('topic', this.topic)
     this.client.subscribe(this.topic, (error, res) => {
       if (error) {
         console.log('Subscribe to topics error', error)

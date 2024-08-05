@@ -23,7 +23,7 @@ export class OBSClient {
   }
 
   async getSourceScreenshot(
-    sourceName: string,
+    sourceName: string = '显示器采集',
     imageFormat: 'png' | 'jpeg' = 'png'
   ): Promise<{ imageData: string }> {
     return this.obs.call('GetSourceScreenshot', { sourceName, imageFormat })
