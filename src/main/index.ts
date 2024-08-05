@@ -67,9 +67,18 @@ app.whenReady().then(() => {
   createWindow()
 
   // use socket client
+  let initialized = false // 用于跟踪是否已经初始化过
   ipcMain.on('startSDK', async () => {
-    startSDK()
-    initSDK()
+    const cppProcess = startSDK()
+    if (cppProcess) {
+      cppProcess.stdout?.on('data', (data) => {
+        console.log('data->', data)
+        if (!initialized) {
+          // initSDK()
+          initialized = true
+        }
+      })
+    }
   })
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

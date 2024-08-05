@@ -37,16 +37,16 @@ function check(): boolean {
 
 async function login() {
   if (check()) {
-    // const loginResp: LoginResp = await auth(formLabelAlign)
-    // if (loginResp.message != 'OK') {
-    //   throw error('Login failed')
-    // }
-    // const userInfo: UserInfo = {
-    //   username: formLabelAlign.username,
-    //   token: loginResp.data.token
-    // }
-    // const aService = new AuthService()
-    // aService.save(userInfo)
+    const loginResp: LoginResp = await auth(formLabelAlign)
+    if (loginResp.message != 'OK') {
+      throw error('Login failed')
+    }
+    const userInfo: UserInfo = {
+      username: formLabelAlign.username,
+      token: loginResp.data.token
+    }
+    const aService = new AuthService()
+    aService.save(userInfo)
     emitter.emit('login-event')
     router.push('/Camera')
   }

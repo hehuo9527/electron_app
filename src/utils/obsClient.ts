@@ -9,7 +9,7 @@ export class OBSClient {
     this.isConnected = false
   }
 
-  async connect(url: string, password: string, customeRpcVersion = 1): Promise<void> {
+  async connect(url: string, password?: string, customeRpcVersion = 1): Promise<void> {
     try {
       const { obsWebSocketVersion, negotiatedRpcVersion } = await this.obs.connect(url, password, {
         rpcVersion: customeRpcVersion
@@ -23,7 +23,7 @@ export class OBSClient {
   }
 
   async getSourceScreenshot(
-    sourceName: string,
+    sourceName: string = '显示器采集',
     imageFormat: 'png' | 'jpeg' = 'png'
   ): Promise<{ imageData: string }> {
     return this.obs.call('GetSourceScreenshot', { sourceName, imageFormat })

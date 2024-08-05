@@ -19,7 +19,8 @@
     },
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "lib": ["dom", "es6"]
+    "lib": ["dom", "es6"],
+
 
   }
 }

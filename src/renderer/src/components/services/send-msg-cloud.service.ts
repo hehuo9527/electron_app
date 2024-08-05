@@ -1,4 +1,4 @@
-import { CreateTicketResp, ReadyTicketResp } from '@src/types/cloudInfoTypes'
+import { CreateTicketResp, ReadyTicketResp, UpdateParameters } from '@src/types/cloudInfoTypes'
 import { AxiosConfig } from '@src/types/userTypes'
 import { AuthService } from '@src/utils/authService'
 import { HttpClient } from '@src/utils/httpClient'
@@ -34,7 +34,24 @@ export class SendMsgToCloudService {
 
   async readyTicket(ready_ticket_id: number) {
     const req_body = { ticket_id: String(ready_ticket_id) }
-    const createTicketResp: ReadyTicketResp = await this.httpClient.post('/ticket/create', req_body)
+    const createTicketResp: ReadyTicketResp = await this.httpClient.post('/ticket/ready', req_body)
+    return createTicketResp
+  }
+
+  async uploadImage(ready_ticket_id: number) {
+    const req_body = { ticket_id: String(ready_ticket_id) }
+    const createTicketResp: ReadyTicketResp = await this.httpClient.post(
+      '/remote/upload_image',
+      req_body
+    )
+    return createTicketResp
+  }
+
+  async uploadParam(updateParams: UpdateParameters) {
+    const createTicketResp: ReadyTicketResp = await this.httpClient.post(
+      '/remote/log_param',
+      updateParams
+    )
     return createTicketResp
   }
 }
