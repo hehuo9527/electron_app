@@ -5,3 +5,4 @@ out
 *.log*
 test_socket.py
 build/*.bat
+*.py
