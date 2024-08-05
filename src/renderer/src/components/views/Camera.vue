@@ -5,11 +5,13 @@ import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
 import { MQTT } from '@src/utils/mqttClient'
-import { ReadyTicketResp } from '@src/types/cloudInfoTypes'
+import { MQTTCommand, ReadyTicketResp, UpdateParameters } from '@src/types/cloudInfoTypes'
 import { OBSClient } from '@src/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
 import mqtt from 'mqtt/*'
+import { error } from 'console'
+import { tr } from 'element-plus/es/locale'
 
 const cInfo = ref<CameraInfo>({
   camera: '',
@@ -25,6 +27,8 @@ const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
+const obs_url = ref('')
+const obs_source = ref('')
 let ws_obs: OBSClient
 let e_mqtt: MQTT
 const { t } = useI18n()
@@ -39,28 +43,50 @@ function setCameraInfo() {
     imgPath: mockImg
   }
 }
+
 function startSDK() {
   ipcRenderer.send('startSDK')
 }
+
 async function cameraConnection() {
   isCameraButtonDisabled.value = true
-  isMessageBoxVisible.value = false
   isAlertMessageBoxVisible.value = true
-  const WhiteBalanceCommand: CameraOperationReqMsg = {
-    name: 'WhiteBalance',
-    operation: 'GET'
-  }
   startSDK()
   setCameraInfo()
-  window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
-
+  const checkRes = checkOBSInput()
+  if (!checkRes) {
+    isCameraButtonDisabled.value = false
+    isAlertMessageBoxVisible.value = false
+    obs_url.value = ''
+    obs_source.value = ''
+    return
+  }
+  await ws_obs.connect(`ws://${obs_url.value}`)
+  cInfo.value.imgPath = await (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   isAlertMessageBoxVisible.value = false
   isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
   isCameraButtonDisabled.value = false
+  UploadMsg()
+}
+
+function checkOBSInput() {
+  const regex = /^((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|(\[([0-9a-fA-F:]{2,39})\])):([0-9]{1,5})$/
+  if (obs_url.value === '') {
+    alert('没有设置OBS的IP')
+    return false
+  }
+  if (obs_source.value === '') {
+    alert('没有设置OBS的信号源')
+    return false
+  }
+  if (!regex.test(obs_url.value.trim())) {
+    alert('OBS的IP:PORT格式不正确')
+    return false
+  }
+  return true
 }
 
 async function requestRemoteSetting() {
-  // window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
   isRemoterButtonDisabled.value = true
   rInfo.value = {
     remoterId: 'crsp-0001',
@@ -83,6 +109,7 @@ async function requestRemoteSetting() {
   console.log('ticket_resp', ticket_resp)
   e_mqtt.clientId = String(ticket_resp.data.ticket_id)
   e_mqtt.topic = ticket_resp.data.topic
+
   cInfo.value.clientId = String(ticket_resp.data.ticket_id)
   rInfo.value.status = 'Remote Setting Completed'
   isRemoterButtonDisabled.value = false
@@ -94,26 +121,48 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.createConnection()
   e_mqtt.topicSubscribe()
   e_mqtt.client.on('message', (topic, message) => {
-    console.log(`Received message ${message} from topic ${topic}`)
+    const mqttCommand: MQTTCommand = JSON.parse(message.toString())
+    console.log(`Received message ${mqttCommand} from topic ${topic}`)
+    SendCommandToSDK(mqttCommand)
   })
+}
+
+function SendCommandToSDK(command: MQTTCommand) {
   // send to SDK
   const WhiteBalanceCommand: CameraOperationReqMsg = {
-    name: 'WhiteBalance',
-    operation: 'GET'
+    name: command.name,
+    operation: command.operation,
+    val: command.value
   }
   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
 }
+
 function UploadMsg() {
   window.api.onMessage((data) => {
-    console.log('data', data)
+    console.log('receive data from sdk', data)
+    const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
+    if (cameraRespMsg.status !== 'OK') {
+      throw error('SDK Return ERROR')
+    }
+    const updateParameters: UpdateParameters = {
+      ticket_id: e_mqtt.clientId,
+      name: cameraRespMsg.name,
+      value: cameraRespMsg.message
+    }
+    sendMsgToCloudService.uploadParam(updateParameters)
   })
 }
+
 </script>
 <template>
   <div class="camera-page">
     <el-row>
       <div />
-      <el-col :span="12">
+      <el-col :span="12" class="obs_config">
+        <el-input v-model="obs_url" placeholder="请输入OBS的IP:PORT"></el-input>
+        <el-input v-model="obs_source" placeholder="请输入OBS的信号源"></el-input>
+      </el-col>
+      <el-col :span="8" style="text-align: right">
         <el-button
           type="primary"
           plain
@@ -123,7 +172,7 @@ function UploadMsg() {
           >{{ t('cameraConnection') }}</el-button
         >
       </el-col>
-      <el-col :span="12" style="text-align: right">
+      <el-col :span="4" style="text-align: right">
         <el-button
           type="primary"
           plain
@@ -184,6 +233,12 @@ function UploadMsg() {
 
 .waiting-rect {
   margin-top: 130px;
+}
+
+.obs_config {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 40px;
 }
 
 .border-button {

@@ -22,7 +22,7 @@ export class MQTT {
   isConnect: boolean
 
   constructor(username: string) {
-    this.url = `wss://${import.meta.env.VITE_MQTT_URL}/mqtt`
+    this.url = `wss://crsmq.csc.sony.com.cn/mqtt`
     this.clientId = `${username}-${uuidv4()}`
     this.topic = `${username}/${btoa(username)}`
     this.isConnect = false

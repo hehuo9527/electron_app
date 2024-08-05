@@ -9,7 +9,7 @@ export class OBSClient {
     this.isConnected = false
   }
 
-  async connect(url: string, password: string, customeRpcVersion = 1): Promise<void> {
+  async connect(url: string, password?: string, customeRpcVersion = 1): Promise<void> {
     try {
       const { obsWebSocketVersion, negotiatedRpcVersion } = await this.obs.connect(url, password, {
         rpcVersion: customeRpcVersion
