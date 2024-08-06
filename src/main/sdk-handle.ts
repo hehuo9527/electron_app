@@ -1,13 +1,24 @@
-import { ChildProcess, exec, execFile, execSync } from 'child_process'
-import * as path from 'path'
+import { ChildProcess, exec } from 'child_process';
+import * as path from 'path';
+import * as fs from'fs'
+export function startSDK(): ChildProcess | null {
+    let cppProcess: ChildProcess | null = null;
+    const rootPath = path.resolve(process.cwd(), '../../');
 
-export function startSDK() {
-  let cppProcess: ChildProcess | null = null
-  const root_path = path.resolve(__dirname, '../../')
-  try {
-    cppProcess = exec(path.join(root_path, 'CameraSDK_Release/CameraSDK.exe'))
-  } catch (error) {
-    console.error('Error executing file:', error)
-  }
-  return cppProcess
+    try {
+        console.log("rootPath",rootPath)
+    //     fs.writeFile('1111111111.txt',  path.join(rootPath,  '\\CameraSDK_Release\\CameraSDK.exe'), 'utf8', (err) => {
+    //       if (err) {
+    //           console.error(err);
+    //       } else {
+    //           console.log('文件写入成功！');
+    //       }
+    //   });
+        const sdkPath = path.join(rootPath,  '\\CameraSDK_Release\\CameraSDK.exe');
+        cppProcess = exec(sdkPath);
+        return cppProcess;
+    } catch (error) {
+        console.error('exec Failed', error);
+        return null;
+    }
 }
