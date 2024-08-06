@@ -4,12 +4,8 @@ import * as path from 'path'
 export function startSDK() {
   let cppProcess: ChildProcess | null = null
   const root_path = path.resolve(__dirname, '../../')
-  console.log('path', root_path)
-  console.log(process.env.NODE_ENV)
   try {
-    if (process.env.NODE_ENV === 'production') {
-      cppProcess = execFile(path.join(root_path, 'CameraSDK_Release/CameraSDK.exe'))
-    }
+    cppProcess = exec(path.join(root_path, 'CameraSDK_Release/CameraSDK.exe'))
   } catch (error) {
     console.error('Error executing file:', error)
   }
