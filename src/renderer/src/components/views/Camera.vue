@@ -27,9 +27,9 @@ const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
+let mqttCommand = ref<MQTTCommand>({ name: '', operation: '', value: '' })
 const obs_url = ref('')
 const obs_source = ref('')
-let mqttCommand = ref<MQTTCommand>({ name: '', operation: '', value: '' })
 let ws_obs: OBSClient
 let e_mqtt: MQTT
 const { t } = useI18n()
@@ -154,6 +154,7 @@ function UploadMsg() {
     sendMsgToCloudService.uploadParam(updateParameters)
   })
 }
+
 </script>
 <template>
   <div class="camera-page">
