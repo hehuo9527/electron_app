@@ -20,7 +20,5 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "lib": ["dom", "es6"],
-
-
   }
 }

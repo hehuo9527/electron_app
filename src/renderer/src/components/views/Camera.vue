@@ -27,6 +27,7 @@ const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
+let mqttCommand = ref<MQTTCommand>({ name: '', operation: '', value: '' })
 const obs_url = ref('')
 const obs_source = ref('')
 let ws_obs: OBSClient
@@ -121,18 +122,18 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.createConnection()
   e_mqtt.topicSubscribe()
   e_mqtt.client.on('message', (topic, message) => {
-    const mqttCommand: MQTTCommand = JSON.parse(message.toString())
-    console.log(`Received message ${mqttCommand} from topic ${topic}`)
-    SendCommandToSDK(mqttCommand)
+    mqttCommand.value = JSON.parse(message.toString())
+    console.log(`Received message ${mqttCommand.value} from topic ${topic}`)
+    SendCommandToSDK()
   })
 }
 
-function SendCommandToSDK(command: MQTTCommand) {
+function SendCommandToSDK() {
   // send to SDK
   const WhiteBalanceCommand: CameraOperationReqMsg = {
-    name: command.name,
-    operation: command.operation,
-    val: command.value
+    name: mqttCommand.value.name,
+    operation: mqttCommand.value.operation,
+    val: mqttCommand.value.value
   }
   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
 }
@@ -146,6 +147,7 @@ function UploadMsg() {
     }
     const updateParameters: UpdateParameters = {
       ticket_id: e_mqtt.clientId,
+      operation: mqttCommand.value.operation,
       name: cameraRespMsg.name,
       value: cameraRespMsg.message
     }

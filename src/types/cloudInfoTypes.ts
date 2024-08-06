@@ -24,6 +24,7 @@ export interface MQTTCommand {
 
 export interface UpdateParameters {
   ticket_id: string
+  operation: string
   name: string
   value: string
 }
