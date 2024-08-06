@@ -3,7 +3,6 @@ import SocketClient from '../utils/socket-client'
 
 export function initializeSocketClient(host: string, port: number) {
   const socketClient = new SocketClient(host, port)
-
   return socketClient
 }
 

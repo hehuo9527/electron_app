@@ -54,16 +54,16 @@ async function cameraConnection() {
   isAlertMessageBoxVisible.value = true
   startSDK()
   setCameraInfo()
-  const checkRes = checkOBSInput()
-  if (!checkRes) {
-    isCameraButtonDisabled.value = false
-    isAlertMessageBoxVisible.value = false
-    obs_url.value = ''
-    obs_source.value = ''
-    return
-  }
-  await ws_obs.connect(`ws://${obs_url.value}`)
-  cInfo.value.imgPath = await (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  // const checkRes = checkOBSInput()
+  // if (!checkRes) {
+  //   isCameraButtonDisabled.value = false
+  //   isAlertMessageBoxVisible.value = false
+  //   obs_url.value = ''
+  //   obs_source.value = ''
+  //   return
+  // }
+  // await ws_obs.connect(`ws://${obs_url.value}`)
+  // cInfo.value.imgPath = await (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   isAlertMessageBoxVisible.value = false
   isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
   isCameraButtonDisabled.value = false

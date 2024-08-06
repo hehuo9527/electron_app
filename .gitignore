@@ -6,3 +6,4 @@ out
 test_socket.py
 build/*.bat
 *.py
+CameraSDK_Release
