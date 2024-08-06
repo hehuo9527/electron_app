@@ -10,6 +10,7 @@ import en from './i18n/en.json'
 import zh from './i18n/zh.json'
 const i18n = createI18n({
   locale: 'zh',
+  legacy: false,
   fallbackLocale: 'zh',
   messages: {
     zh,

@@ -14,7 +14,7 @@ function createWindow() {
     autoHideMenuBar: true,
     resizable: false,
     frame: false,
-    icon: join(__dirname, '../../resources/icon.ico'),
+    icon: join(__dirname, '../../build/icon.ico'),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
