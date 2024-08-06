@@ -1,11 +1,7 @@
 import { ipcMain } from 'electron'
 import SocketClient from '../utils/socket-client'
 
-export function initializeSocketClient(
-  host: string,
-  port: number,
-  mainWindow: Electron.BrowserWindow
-) {
+export function initializeSocketClient(host: string, port: number) {
   const socketClient = new SocketClient(host, port)
 
   return socketClient

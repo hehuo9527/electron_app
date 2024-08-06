@@ -67,18 +67,11 @@ app.whenReady().then(() => {
   createWindow()
 
   // use socket client
-  let initialized = false // 用于跟踪是否已经初始化过
   ipcMain.on('startSDK', async () => {
     const cppProcess = startSDK()
-    if (cppProcess) {
-      cppProcess.stdout?.on('data', (data) => {
-        console.log('data->', data)
-        if (!initialized) {
-          // initSDK()
-          initialized = true
-        }
-      })
-    }
+    setTimeout(() => {
+      initSDK()
+    }, 2000)
   })
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -99,7 +92,7 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 function initSDK() {
-  socketClient = initializeSocketClient('127.0.0.1', 3333, mainWindow)
+  socketClient = initializeSocketClient('127.0.0.1', 3333)
   setupIpcHandlers(socketClient)
   socketClient.on('message', (data) => {
     mainWindow.webContents.send('socketResp', data)
