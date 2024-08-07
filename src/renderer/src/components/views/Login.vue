@@ -66,7 +66,7 @@ const onSubmit = async () => {
         <el-card shadow="never" class="login-form">
           <el-row style="margin-bottom: 10px">
             <el-col>
-              <span class="login-title">{{ t('logIn') }}</span>
+              <span class="login-title">{{ t('登录') }}</span>
             </el-col>
           </el-row>
           <el-form
@@ -75,10 +75,10 @@ const onSubmit = async () => {
             :model="formLabelAlign"
             style="max-width: 460px"
           >
-            <el-form-item :label="t('userName')" class="input-label">
+            <el-form-item :label="t('用户名')" class="input-label">
               <el-input v-model="formLabelAlign.username" />
             </el-form-item>
-            <el-form-item :label="t('password')" class="input-label">
+            <el-form-item :label="t('密码')" class="input-label">
               <el-input
                 v-model="formLabelAlign.password"
                 type="password"
@@ -87,7 +87,7 @@ const onSubmit = async () => {
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="danger" @click="onSubmit">{{ t('loginIn') }}</el-button>
+              <el-button type="danger" @click="onSubmit">{{ t('登录系统') }}</el-button>
             </el-form-item>
           </el-form>
         </el-card>

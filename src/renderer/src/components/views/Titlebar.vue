@@ -35,16 +35,16 @@ function loginOut() {
   <header id="titlebar">
     <div id="drag-region">
       <el-row>
-        <el-col :span="10">
+        <el-col :span="8">
           <div id="window-title">
             <el-icon style="margin-right: 4px; font-size: 20px">
               <CameraFilled />
             </el-icon>
-            <span>{{ t('title') }}</span>
+            <span>{{ t('远程相机设置') }}</span>
           </div>
         </el-col>
-        <el-col :span="12">
-          <div v-if="isUserDisable" class="user-button">
+        <el-col :span="13">
+          <div v-show="isUserDisable" class="user-button">
             <el-icon style="margin: 0 4px 0 0"> <UserFilled /></el-icon>
             <span>
               {{ userName }}
@@ -52,10 +52,10 @@ function loginOut() {
           </div>
         </el-col>
         <div class="window-controls">
-          <div v-if="isUserDisable" id="exit-button" class="button" @click="loginOut">
-            {{ t('logout') }}
+          <div v-show="isUserDisable" id="exit-button" class="button" @click="loginOut">
+            {{ t('登出') }}
           </div>
-          <div id="close-button" class="button" @click="closeWindow">
+          <div class="button close-button" @click="closeWindow">
             <el-icon>
               <CloseBold />
             </el-icon>
@@ -84,7 +84,6 @@ function loginOut() {
 
 #titlebar #drag-region {
   width: 100%;
-  height: 100%;
   -webkit-app-region: drag;
 }
 
@@ -110,29 +109,25 @@ function loginOut() {
   justify-content: flex-end;
   align-items: center;
   width: 100%;
-  height: 100%;
 }
 
 #window-title span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  /* line-height: 1.5; */
 }
 
 .window-controls {
-  display: grid;
-  grid-template-columns: repeat(2, 40px);
-  margin-left: 15px;
+  display: flex;
+  width: 130px;
+  margin-left: 10px;
+  justify-content: flex-end;
 }
 
 .window-controls .button {
-  grid-row: 1 / span 1;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
-  width: 100%;
-  height: 100%;
   -webkit-app-region: no-drag;
   padding: 0px 4px;
 }
@@ -149,17 +144,17 @@ function loginOut() {
   background: rgba(255, 255, 255, 0.2);
 }
 
-#close-button:hover,
+.close-button:hover,
 #exit-button:hover {
   background: #e81123 !important;
 }
 
-#close-button:active,
+.close-button:active,
 #exit-button:hover {
   background: #f1707a !important;
 }
 
-#close-button:active .icon {
+.close-button:active .icon {
   filter: invert(1);
 }
 
@@ -167,11 +162,7 @@ function loginOut() {
   filter: invert(1);
 }
 
-#exit-button {
-  grid-column: 1;
-}
-
-#close-button {
-  grid-column: 2;
+.close-button {
+  width: 50px !important;
 }
 </style>

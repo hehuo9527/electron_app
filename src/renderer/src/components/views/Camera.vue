@@ -71,7 +71,7 @@ async function cameraConnection() {
 function checkOBSInput() {
   const regex = /^((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|(\[([0-9a-fA-F:]{2,39})\])):([0-9]{1,5})$/
   if (obs_url.value === '') {
-    alert(t('obs_ip_empty'))
+    alert(t('未设置OBS IP地址'))
     return false
   }
   if (obs_source.value === '') {
@@ -164,18 +164,18 @@ function UploadMsg() {
   <div class="camera-page">
     <el-row>
       <div />
-      <el-col :span="12" class="obs_config">
+      <el-col :span="10" class="obs_config">
         <el-input v-model="obs_url" placeholder="请输入OBS的IP:PORT"></el-input>
         <el-input v-model="obs_source" placeholder="请输入OBS的信号源"></el-input>
       </el-col>
-      <el-col :span="8" style="text-align: right">
+      <el-col :span="10" style="text-align: right">
         <el-button
           type="primary"
           plain
           class="border-button"
           :disabled="isCameraButtonDisabled"
           @click="cameraConnection"
-          >{{ t('cameraConnection') }}</el-button
+          >{{ t('连接相机') }}</el-button
         >
       </el-col>
       <el-col :span="4" style="text-align: right">
@@ -185,7 +185,7 @@ function UploadMsg() {
           class="border-button"
           :disabled="isRemoterButtonDisabled"
           @click="requestRemoteSetting"
-          >{{ t('requestRemoteSetting') }}</el-button
+          >{{ t('请求远程设置') }}</el-button
         >
       </el-col>
     </el-row>
@@ -193,8 +193,8 @@ function UploadMsg() {
       <div />
       <el-col style="text-align: center">
         <div class="alert-message-box">
-          <div class="title">{{ t('cameraConnecting') }}</div>
-          <div class="message">{{ t('pleaseKeepU') }}</div>
+          <div class="title">{{ t('相机连接中...') }}</div>
+          <div class="message">{{ t('请保持相机正在USB连接') }}</div>
         </div>
       </el-col>
     </el-row>
@@ -202,25 +202,25 @@ function UploadMsg() {
       <div class="camera-content-left">
         <div class="message-box">
           <p>
-            <b>{{ t('camera') }}</b
+            <b>{{ t('相机') }}</b
             >{{ cInfo?.camera }}
           </p>
           <p>
-            <b>{{ t('status') }}</b
+            <b>{{ t('状态') }}</b
             >{{ cInfo?.status }}
           </p>
           <p>
-            <b>{{ t('clientId') }}</b
+            <b>{{ t('客户端ID') }}</b
             >{{ cInfo?.clientId }}
           </p>
         </div>
         <div class="message-box">
           <p>
-            <b>{{ t('remoterId') }}</b
+            <b>{{ t('远程ID') }}</b
             >{{ rInfo?.remoterId }}
           </p>
           <p>
-            <b>{{ t('status') }}</b
+            <b>{{ t('状态') }}</b
             >{{ rInfo?.status }}
           </p>
         </div>
@@ -233,6 +233,9 @@ function UploadMsg() {
 </template>
 
 <style scoped>
+el-button {
+  width: 150px;
+}
 .camera-page {
   height: 630px;
 }
@@ -248,7 +251,7 @@ function UploadMsg() {
 }
 
 .border-button {
-  width: 130px;
+  width: 180px;
   height: 45px !important;
   border: 1px solid rgb(243, 170, 120) !important;
   background-color: transparent !important;
