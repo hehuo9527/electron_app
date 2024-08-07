@@ -5,7 +5,7 @@ import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus'
 import emitter from '@src/utils/emitter'
 import { LoginInfo, LoginResp, UserInfo } from '@src/types/userTypes'
-import { AuthService } from '@src//utils/authService'
+import { AuthService } from '@renderer/components/utils/authService'
 import { useI18n } from 'vue-i18n'
 import { auth } from '../services/auth.service'
 import { error } from 'console'
@@ -147,10 +147,6 @@ const onSubmit = async () => {
 .path-input {
   margin-left: 7.5%;
   margin-right: 5px;
-}
-
-.el-row:last-child {
-  margin-bottom: 10px;
 }
 
 .el-col {

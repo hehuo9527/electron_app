@@ -5,8 +5,8 @@ import {
   UpdateParametersResp
 } from '@src/types/cloudInfoTypes'
 import { AxiosConfig } from '@src/types/userTypes'
-import { AuthService } from '@src/utils/authService'
-import { HttpClient } from '@src/utils/httpClient'
+import { AuthService } from '@renderer/components/utils/authService'
+import { HttpClient } from '@renderer/components/utils/httpClient'
 
 export class SendMsgToCloudService {
   private cloudUrl: string = import.meta.env.VITE_API_URL

@@ -1,5 +1,5 @@
-import axios, { AxiosInstance } from 'axios'
-import { AxiosConfig } from '../types/userTypes'
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios'
+import { AxiosConfig } from '../../../../types/userTypes'
 import qs from 'qs'
 export class HttpClient {
   private axiosInstance: AxiosInstance
@@ -37,7 +37,7 @@ export class HttpClient {
   // Delete
   async delete(path: string, data?: any): Promise<any> {
     try {
-      const response = await this.axiosInstance.delete(path, data)
+      const response = await this.axiosInstance.delete(path, { data })
       return response.data
     } catch (error) {
       console.error('delete请求错误:', error)

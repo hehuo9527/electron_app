@@ -3,21 +3,27 @@ import { ipcRenderer } from 'electron'
 import { ref } from 'vue'
 import emitter from '@src/utils/emitter'
 import { useRouter } from 'vue-router'
-import { AuthService } from '@src/utils/authService'
+import { AuthService } from '@renderer/components/utils/authService'
 import { UserInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 const isUserDisable = ref(false)
 const router = useRouter()
 const aService = new AuthService()
 const { t } = useI18n()
+
+const userName = ref('')
 emitter.on('login-event', (value: any) => {
-  const uInfo: UserInfo | null = aService.get()
+  const uInfo: UserInfo = aService.get()
+  console.log('uInfo', uInfo)
+  userName.value = uInfo.username
   isUserDisable.value = true
 })
+
 function closeWindow() {
   aService.clear()
   ipcRenderer.send('close')
 }
+
 function loginOut() {
   aService.clear()
   isUserDisable.value = false
@@ -40,7 +46,7 @@ function loginOut() {
         </el-col>
         <el-col :span="11" style="text-align: right">
           <div v-if="isUserDisable" id="min-button" class="user-button" style="margin-right: 8px">
-            <el-icon style="margin-right: 4px"> <UserFilled /> </el-icon>User A
+            <el-icon style="margin: 0 4px 0 0"> <UserFilled /></el-icon>{{ userName }}
           </div>
         </el-col>
         <el-col :span="3" style="text-align: right">

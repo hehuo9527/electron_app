@@ -1,16 +1,17 @@
-import { UserInfo } from '../types/userTypes'
+import { error } from 'console'
+import { UserInfo } from '../../../../types/userTypes'
 
 export class AuthService {
   save(uInfo: UserInfo) {
     localStorage.setItem('userInfo', JSON.stringify(uInfo))
   }
 
-  get(): UserInfo | null {
+  get(): UserInfo {
     const content = localStorage.getItem('userInfo')
-    if (content) {
-      return JSON.parse(content)
+    if (!content) {
+      throw error('user info is null')
     }
-    return null
+    return JSON.parse(content)
   }
 
   clear() {

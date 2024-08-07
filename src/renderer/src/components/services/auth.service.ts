@@ -1,7 +1,6 @@
-import { HttpClient } from '../../../../utils/httpClient'
+import { HttpClient } from '../utils/httpClient'
 import { AxiosConfig } from '../../../../types/userTypes'
 import { LoginInfo, LoginResp } from '@src/types/userTypes'
-
 
 export async function auth(lInfo: LoginInfo): Promise<any> {
   const config: AxiosConfig = {
