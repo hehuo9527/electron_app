@@ -2,10 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from "electron";
 import path, { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import SocketClient from "../utils/socket-client";
-import { initializeSocketClient, setupIpcHandlers } from "./ipc-handle";
-import { startSDK } from "./sdk-handle";
-import { tr } from "element-plus/es/locale";
-let socketClient: SocketClient;
+import { initServe } from "./ipc-handle";
 let mainWindow: BrowserWindow;
 function createWindow() {
   // Create the browser window.
@@ -54,9 +51,9 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId("com.sony.csc");
+  electronApp.setAppUserModelId("com.qiu.csc");
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -66,21 +63,27 @@ app.whenReady().then(() => {
   });
 
   createWindow();
-  let initialized = false; // 用于跟踪是否已经初始化过
-  console.log(process.env.NODE_ENV);
+
   // use socket client
-  ipcMain.on("startSDK", async () => {
-    let process = startSDK(mainWindow);
-    if (process) {
-      process.stdout?.on("data", (data) => {
-        if (!initialized) {
-          console.log(data);
-          initSDK();
-          initialized = true;
-        }
-      });
-    }
+  ipcMain.handle("test_ipc", (event, data) => {
+    console.log(`handle `, data);
+    mainWindow.webContents.send("log", "test_ipc to vue");
   });
+  initServe()
+    .then((result: any) => {
+      console.log(result.status);
+      mylog("start serve");
+    })
+    .catch((error) => {
+      console.error("Failed to start the server:", error.error);
+      mainWindow.webContents.on("did-finish-load", () => {
+        mainWindow.webContents.send(
+          "log",
+          `start server failed: ${error.error.message}`,
+        );
+      });
+    });
+  // mainWindow.webContents.send("log", "start server success");
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -99,11 +102,9 @@ app.on("window-all-closed", () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
-function initSDK() {
-  socketClient = initializeSocketClient("127.0.0.1", 3333, mainWindow);
-  setupIpcHandlers(socketClient);
-  socketClient.on("message", (data) => {
-    const root_path = path.resolve(__dirname, "../../");
-    mainWindow.webContents.send("socketResp", data + "  ->" + root_path);
-  });
+export function mylog(log_msg: string) {
+  console.log("send-->", log_msg);
+  // mainWindow.webContents.on("did-finish-load", () => {
+  mainWindow.webContents.send("log", log_msg + "hh");
+  // });
 }

@@ -9,7 +9,7 @@
   "compilerOptions": {
     "noImplicitReturns": false,
     "composite": true,
-    "types": ["electron-vite/node", "vite/client"],
+    "types": ["electron-vite/node", "vite/client",""],
     "noUnusedLocals": false,
     "noUnusedParameters": false
   }

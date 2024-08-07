@@ -23,6 +23,10 @@ ipcRenderer.on("login", (_event, result) => {
   emitter.emit("login-event", "test");
 });
 
+ipcRenderer.on("log", (e, d) => {
+  console.log(`log: ${d}`);
+});
+
 function checkEmpty(): boolean {
   return formLabelAlign.username != "" && formLabelAlign.password != "";
 }
@@ -51,7 +55,9 @@ async function login() {
     router.push("/Camera");
   }
 }
-
+async function test_ipc() {
+  ipcRenderer.invoke("test_ipc", { name: "111", age: 22 });
+}
 const onSubmit = async () => {
   await login();
 };
@@ -90,6 +96,9 @@ const onSubmit = async () => {
               <el-button type="danger" @click="onSubmit">{{
                 t("loginIn")
               }}</el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="danger" @click="test_ipc"> IPC </el-button>
             </el-form-item>
           </el-form>
         </el-card>
