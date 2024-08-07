@@ -6,12 +6,29 @@ import { useRouter } from 'vue-router'
 import { AuthService } from '@renderer/components/utils/authService'
 import { UserInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
+import { watch } from 'vue'
 const isUserDisable = ref(false)
 const router = useRouter()
 const aService = new AuthService()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const userName = ref('')
+const selectLocale = ref('zh')
+const localeOptions = [
+  {
+    value: 'zh',
+    label: '中文'
+  },
+  {
+    value: 'en',
+    label: 'English'
+  }
+]
+
+watch(selectLocale, (newValue) => {
+  locale.value = newValue
+})
+
 emitter.on('login-event', (value: any) => {
   const uInfo: UserInfo = aService.get()
   console.log('uInfo', uInfo)
@@ -41,6 +58,20 @@ function loginOut() {
               <CameraFilled />
             </el-icon>
             <span>{{ t('远程相机设置') }}</span>
+            <el-select
+              v-model="selectLocale"
+              class="els"
+              placeholder="中文"
+              :popper-append-to-body="false"
+            >
+              <el-option
+                v-for="item in localeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
           </div>
         </el-col>
         <el-col :span="13">
@@ -66,15 +97,12 @@ function loginOut() {
   </header>
 </template>
 
-<style>
+<style scoped>
 #titlebar {
+  background-color: rgb(64, 64, 64);
   display: block;
   height: 32px;
   width: calc(100% - 2px);
-}
-
-.menu-background-color {
-  background-color: rgb(64, 64, 64);
 }
 
 #titlebar {
@@ -97,7 +125,9 @@ function loginOut() {
   align-items: center;
   overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
-  /* font-size: 12px; */
+  span {
+    width: 175px;
+  }
 }
 
 .maximized #window-title {
@@ -164,5 +194,16 @@ function loginOut() {
 
 .close-button {
   width: 50px !important;
+}
+
+.el-select {
+  margin-left: 15px;
+  width: 100px !important;
+  -webkit-app-region: no-drag;
+}
+.els ::v-deep .el-select__wrapper {
+  border-radius: 4px;
+  margin: 2px 0;
+  min-height: 0px !important;
 }
 </style>

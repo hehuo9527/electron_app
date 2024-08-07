@@ -7,7 +7,7 @@ router.push('/Login')
 
 <template>
   <div class="common-layout">
-    <el-row class="menu-background-color">
+    <el-row>
       <Titlebar />
     </el-row>
     <el-container>
