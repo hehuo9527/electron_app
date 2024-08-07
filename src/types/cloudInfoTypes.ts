@@ -22,9 +22,14 @@ export interface MQTTCommand {
   value?: string
 }
 
-export interface UpdateParameters {
+export interface UpdateParametersReq {
   ticket_id: string
   operation: string
   name: string
   value: string
+}
+
+export interface UpdateParametersResp {
+  content: unknown
+  messageg: string
 }

@@ -5,7 +5,7 @@ import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
 import { MQTT } from '@src/utils/mqttClient'
-import { MQTTCommand, ReadyTicketResp, UpdateParameters } from '@src/types/cloudInfoTypes'
+import { MQTTCommand, ReadyTicketResp, UpdateParametersReq } from '@src/types/cloudInfoTypes'
 import { OBSClient } from '@src/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
@@ -63,7 +63,7 @@ async function cameraConnection() {
     return
   }
   await ws_obs.connect(`ws://${obs_url.value}`)
-  cInfo.value.imgPath = await (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   isAlertMessageBoxVisible.value = false
   isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
   isCameraButtonDisabled.value = false
@@ -102,7 +102,7 @@ async function requestRemoteSetting() {
   if (ticket_resp.message == 'OK') {
     is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
     if (is_ticket_ready.message !== 'OK') {
-      console.log('ticket is not ready')
+      throw error('ticket is not ready')
     }
   }
   // connect mqtt
@@ -123,7 +123,7 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.topicSubscribe()
   e_mqtt.client.on('message', (topic, message) => {
     mqttCommand.value = JSON.parse(message.toString())
-    console.log(`Received message ${mqttCommand.value} from topic ${topic}`)
+    console.log(`Received message ${JSON.stringify(mqttCommand.value)} from topic:${topic}`)
     SendCommandToSDK()
   })
 }
@@ -139,22 +139,24 @@ function SendCommandToSDK() {
 }
 
 function UploadMsg() {
-  window.api.onMessage((data) => {
+  window.api.onMessage(async (data) => {
     console.log('receive data from sdk', data)
     const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
     if (cameraRespMsg.status !== 'OK') {
       throw error('SDK Return ERROR')
     }
-    const updateParameters: UpdateParameters = {
+    const updateParameters: UpdateParametersReq = {
       ticket_id: e_mqtt.clientId,
       operation: mqttCommand.value.operation,
       name: cameraRespMsg.name,
       value: cameraRespMsg.message
     }
-    sendMsgToCloudService.uploadParam(updateParameters)
+    sendMsgToCloudService.updateParam(updateParameters)
+    // TODO Send image to cloud
+    // let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+    // sendMsgToCloudService.uploadImg({})
   })
 }
-
 </script>
 <template>
   <div class="camera-page">
