@@ -2,7 +2,7 @@
     "title":"Remote Camera Setting",
     "logIn":"Log In",
     "loginIn":"Login In",
-    "exit":"Exit",
+    "logout":"Log Out",
     "userName":"UserName",
     "password":"Password",
     "userNameIsEmpty":"Username cannot be empty!",
@@ -14,5 +14,6 @@
     "camera":"Camera:",
     "status":"Status:",
     "clientId":"Client ID:",
-    "remoterId":"Remoter ID:"
+    "remoterId":"Remoter ID:",
+    "obs_ip_empty":"OBS IP Is Empty"
 }

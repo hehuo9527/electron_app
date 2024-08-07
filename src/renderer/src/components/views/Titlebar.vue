@@ -35,7 +35,6 @@ function loginOut() {
   <header id="titlebar">
     <div id="drag-region">
       <el-row>
-        <div />
         <el-col :span="10">
           <div id="window-title">
             <el-icon style="margin-right: 4px; font-size: 20px">
@@ -44,23 +43,24 @@ function loginOut() {
             <span>{{ t('title') }}</span>
           </div>
         </el-col>
-        <el-col :span="11" style="text-align: right">
-          <div v-if="isUserDisable" id="min-button" class="user-button" style="margin-right: 8px">
-            <el-icon style="margin: 0 4px 0 0"> <UserFilled /></el-icon>{{ userName }}
+        <el-col :span="12">
+          <div v-if="isUserDisable" class="user-button">
+            <el-icon style="margin: 0 4px 0 0"> <UserFilled /></el-icon>
+            <span>
+              {{ userName }}
+            </span>
           </div>
         </el-col>
-        <el-col :span="3" style="text-align: right">
-          <div class="window-controls">
-            <div v-if="isUserDisable" id="exit-button" class="button" @click="loginOut">
-              {{ t('exit') }}
-            </div>
-            <div id="close-button" class="button" @click="closeWindow">
-              <el-icon>
-                <CloseBold />
-              </el-icon>
-            </div>
+        <div class="window-controls">
+          <div v-if="isUserDisable" id="exit-button" class="button" @click="loginOut">
+            {{ t('logout') }}
           </div>
-        </el-col>
+          <div id="close-button" class="button" @click="closeWindow">
+            <el-icon>
+              <CloseBold />
+            </el-icon>
+          </div>
+        </div>
       </el-row>
     </div>
   </header>
@@ -90,7 +90,6 @@ function loginOut() {
 
 #titlebar #drag-region {
   display: grid;
-  /* grid-template-columns: auto 138px; */
 }
 
 #window-title {
@@ -106,6 +105,14 @@ function loginOut() {
   margin-left: 12px;
 }
 
+.user-button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
 #window-title span {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -116,15 +123,8 @@ function loginOut() {
 .window-controls {
   display: grid;
   grid-template-columns: repeat(2, 40px);
-  position: absolute;
-  top: 0;
-  right: 8px;
-  height: 100%;
+  margin-left: 15px;
 }
-
-/* #window-controls {
-   -webkit-app-region: no-drag;
-} */
 
 .window-controls .button {
   grid-row: 1 / span 1;
@@ -135,27 +135,6 @@ function loginOut() {
   height: 100%;
   -webkit-app-region: no-drag;
   padding: 0px 4px;
-}
-
-#window-controls .user-button {
-  grid-row: 1 / span 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-@media (-webkit-device-pixel-ratio: 1.5),
-  (device-pixel-ratio: 1.5),
-  (-webkit-device-pixel-ratio: 2),
-  (device-pixel-ratio: 2),
-  (-webkit-device-pixel-ratio: 3),
-  (device-pixel-ratio: 3) {
-  .window-controls .icon {
-    width: 10px;
-    height: 10px;
-  }
 }
 
 .window-controls .button {

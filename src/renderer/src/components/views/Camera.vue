@@ -9,9 +9,7 @@ import { MQTTCommand, ReadyTicketResp, UpdateParametersReq } from '@src/types/cl
 import { OBSClient } from '@renderer/components/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
-import mqtt from 'mqtt/*'
 import { error } from 'console'
-import { tr } from 'element-plus/es/locale'
 
 const cInfo = ref<CameraInfo>({
   camera: '',
@@ -73,7 +71,7 @@ async function cameraConnection() {
 function checkOBSInput() {
   const regex = /^((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|(\[([0-9a-fA-F:]{2,39})\])):([0-9]{1,5})$/
   if (obs_url.value === '') {
-    alert('没有设置OBS的IP')
+    alert(t('obs_ip_empty'))
     return false
   }
   if (obs_source.value === '') {
@@ -88,6 +86,10 @@ function checkOBSInput() {
 }
 
 async function requestRemoteSetting() {
+  if (isAlertMessageBoxVisible.value == false) {
+    console.log('相机未连接!')
+    return
+  }
   isRemoterButtonDisabled.value = true
   rInfo.value = {
     remoterId: 'crsp-0001',
