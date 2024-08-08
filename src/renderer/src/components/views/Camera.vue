@@ -127,41 +127,26 @@ function ProcessMsg(e_mqtt: MQTT) {
       operation: mqttCommand.value.operation,
       val: mqttCommand.value.value
     }
+    console.log('vue send msg is:', JSON.stringify(sdkCommand))
     ipcRenderer.send('mqtt:msg', JSON.stringify(sdkCommand))
-    // SendCommandToSDK()
+    console.log('send msg success')
   })
 }
-
-// function SendCommandToSDK() {
-//   // send to SDK
-//   const WhiteBalanceCommand: CameraOperationReqMsg = {
-//     name: mqttCommand.value.name,
-//     operation: mqttCommand.value.operation,
-//     val: mqttCommand.value.value
-//   }
-//   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
-//   console.log('send message success to SDK', JSON.stringify(WhiteBalanceCommand))
-// }
 
 ipcRenderer.on('sdk:msg', (evt, data) => {
   console.log('receive sdk data', data)
   const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
-  if (cameraRespMsg.status !== 'OK') {
-    throw error('SDK Return ERROR')
-  }
-  if (
-    cameraRespMsg.message == '' ||
-    cameraRespMsg.message == null ||
-    cameraRespMsg.message == undefined
-  ) {
-    cameraRespMsg.message = '-1'
-  }
   const updateParameters: UpdateParametersReq = {
     ticket_id: e_mqtt.clientId,
     operation: mqttCommand.value.operation,
     name: cameraRespMsg.name,
     value: cameraRespMsg.message
   }
+  if (cameraRespMsg.status !== 'OK') {
+    // throw error('SDK Return ERROR')
+    updateParameters.value = '-1'
+  }
+
   console.log('upload log', JSON.stringify(updateParameters))
   sendMsgToCloudService.updateParam(updateParameters)
   // TODO Send image to cloud

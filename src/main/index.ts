@@ -74,6 +74,7 @@ function createWindow() {
   // receive mqtt msg
   ipcMain.on('mqtt:msg', (evt, data) => {
     try {
+      console.log('prepare to send msg to sdk', data)
       sServe.socket.write(data)
       mainWindow.webContents.send('send to sdk msg is', data)
     } catch (error) {
