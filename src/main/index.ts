@@ -2,9 +2,8 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import SocketClient from '../utils/socket-client'
-import { initializeSocketClient, setupIpcHandlers } from './ipc-handle'
 import { startSDK } from './sdk-handle'
-let socketClient: SocketClient
+import { SocketServer } from './socket-serve'
 let mainWindow: BrowserWindow
 function createWindow() {
   // Create the browser window.
@@ -49,6 +48,34 @@ function createWindow() {
   ipcMain.on('close', () => {
     mainWindow.close()
   })
+
+  // start sdk
+  ipcMain.on('startSDK', async () => {
+    try {
+      const cppProcess = startSDK(mainWindow)
+    } catch (error) {
+      mainWindow.webContents.send('log', error)
+    }
+  })
+
+  // start socket serve
+  let sServe: SocketServer
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Window content loaded')
+    try {
+      let sServe = new SocketServer(3333, mainWindow)
+      sServe.start()
+      mainWindow.webContents.send('log', 'start socket serve success')
+    } catch (error) {
+      mainWindow.webContents.send('log', 'start socket serve failed')
+    }
+  })
+
+  // receive mqtt msg
+  ipcMain.on('mqtt:msg', (evt, data) => {
+    sServe.socket.write(data)
+    mainWindow.webContents.send('send to sdk msg is', data)
+  })
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -66,13 +93,6 @@ app.whenReady().then(() => {
 
   createWindow()
 
-  // use socket client
-  ipcMain.on('startSDK', async () => {
-    const cppProcess = startSDK()
-    setTimeout(() => {
-      initSDK()
-    }, 2000)
-  })
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -91,10 +111,3 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
-function initSDK() {
-  socketClient = initializeSocketClient('127.0.0.1', 3333)
-  setupIpcHandlers(socketClient)
-  socketClient.on('message', (data) => {
-    mainWindow.webContents.send('socketResp', data)
-  })
-}

@@ -52,20 +52,20 @@ async function cameraConnection() {
   isAlertMessageBoxVisible.value = true
   startSDK()
   setCameraInfo()
-  const checkRes = checkOBSInput()
-  if (!checkRes) {
-    isCameraButtonDisabled.value = false
-    isAlertMessageBoxVisible.value = false
-    obs_url.value = ''
-    obs_source.value = ''
-    return
-  }
-  await ws_obs.connect(`ws://${obs_url.value}`)
-  cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  // const checkRes = checkOBSInput()
+  // if (!checkRes) {
+  //   isCameraButtonDisabled.value = false
+  //   isAlertMessageBoxVisible.value = false
+  //   obs_url.value = ''
+  //   obs_source.value = ''
+  //   return
+  // }
+  // await ws_obs.connect(`ws://${obs_url.value}`)
+  // cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   isAlertMessageBoxVisible.value = false
   isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
   isCameraButtonDisabled.value = false
-  UploadMsg()
+  // UploadMsg()
 }
 
 function checkOBSInput() {
@@ -86,10 +86,6 @@ function checkOBSInput() {
 }
 
 async function requestRemoteSetting() {
-  if (isAlertMessageBoxVisible.value == false) {
-    console.log('相机未连接!')
-    return
-  }
   isRemoterButtonDisabled.value = true
   rInfo.value = {
     remoterId: 'crsp-0001',
@@ -126,39 +122,52 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.client.on('message', (topic, message) => {
     mqttCommand.value = JSON.parse(message.toString())
     console.log(`Received message ${JSON.stringify(mqttCommand.value)} from topic:${topic}`)
-    SendCommandToSDK()
-  })
-}
-
-function SendCommandToSDK() {
-  // send to SDK
-  const WhiteBalanceCommand: CameraOperationReqMsg = {
-    name: mqttCommand.value.name,
-    operation: mqttCommand.value.operation,
-    val: mqttCommand.value.value
-  }
-  window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
-}
-
-function UploadMsg() {
-  window.api.onMessage(async (data) => {
-    console.log('receive data from sdk', data)
-    const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
-    if (cameraRespMsg.status !== 'OK') {
-      throw error('SDK Return ERROR')
-    }
-    const updateParameters: UpdateParametersReq = {
-      ticket_id: e_mqtt.clientId,
+    let sdkCommand: CameraOperationReqMsg = {
+      name: mqttCommand.value.name,
       operation: mqttCommand.value.operation,
-      name: cameraRespMsg.name,
-      value: cameraRespMsg.message
+      val: mqttCommand.value.value
     }
-    sendMsgToCloudService.updateParam(updateParameters)
-    // TODO Send image to cloud
-    // let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
-    // sendMsgToCloudService.uploadImg({})
+    ipcRenderer.send('mqtt:msg', JSON.stringify(sdkCommand))
+    // SendCommandToSDK()
   })
 }
+
+// function SendCommandToSDK() {
+//   // send to SDK
+//   const WhiteBalanceCommand: CameraOperationReqMsg = {
+//     name: mqttCommand.value.name,
+//     operation: mqttCommand.value.operation,
+//     val: mqttCommand.value.value
+//   }
+//   window.api.sendMessage(JSON.stringify(WhiteBalanceCommand))
+//   console.log('send message success to SDK', JSON.stringify(WhiteBalanceCommand))
+// }
+
+ipcRenderer.on('sdk:msg', (evt, data) => {
+  console.log('receive sdk data', data)
+  const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
+  if (cameraRespMsg.status !== 'OK') {
+    throw error('SDK Return ERROR')
+  }
+  if (
+    cameraRespMsg.message == '' ||
+    cameraRespMsg.message == null ||
+    cameraRespMsg.message == undefined
+  ) {
+    cameraRespMsg.message = '-1'
+  }
+  const updateParameters: UpdateParametersReq = {
+    ticket_id: e_mqtt.clientId,
+    operation: mqttCommand.value.operation,
+    name: cameraRespMsg.name,
+    value: cameraRespMsg.message
+  }
+  console.log('upload log', JSON.stringify(updateParameters))
+  sendMsgToCloudService.updateParam(updateParameters)
+  // TODO Send image to cloud
+  // let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  // sendMsgToCloudService.uploadImg({})
+})
 </script>
 <template>
   <div class="camera-page">

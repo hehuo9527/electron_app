@@ -26,7 +26,7 @@ export interface UpdateParametersReq {
   ticket_id: string
   operation: string
   name: string
-  value: string
+  value?: string
 }
 
 export interface UpdateParametersResp {

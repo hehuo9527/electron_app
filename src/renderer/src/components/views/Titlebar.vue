@@ -46,6 +46,10 @@ function loginOut() {
   isUserDisable.value = false
   router.push('/Login')
 }
+
+ipcRenderer.on('log', (event, data) => {
+  console.log(`log:${data}`)
+})
 </script>
 
 <template>

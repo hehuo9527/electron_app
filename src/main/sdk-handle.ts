@@ -1,7 +1,8 @@
 import { ChildProcess, exec } from 'child_process'
 import * as path from 'path'
 import * as fs from 'fs'
-export function startSDK(): ChildProcess | null {
+import { BrowserWindow } from 'electron'
+export function startSDK(mainWindow: BrowserWindow): ChildProcess | null {
   let cppProcess: ChildProcess | null = null
   const rootPath = path.resolve(process.cwd(), '../../')
 
@@ -16,9 +17,11 @@ export function startSDK(): ChildProcess | null {
     //   });
     const sdkPath = path.join(rootPath, '\\CameraSDK_Release\\CameraSDK.exe')
     cppProcess = exec(sdkPath)
+    mainWindow.webContents.send('log', 'start sdk success')
     return cppProcess
   } catch (error) {
     console.error('exec Failed', error)
+    mainWindow.webContents.send('log', 'start sdk failed')
     return null
   }
 }
