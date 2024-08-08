@@ -63,7 +63,7 @@ function createWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('Window content loaded')
     try {
-      let sServe = new SocketServer(3333, mainWindow)
+      sServe = new SocketServer(3333, mainWindow)
       sServe.start()
       mainWindow.webContents.send('log', 'start socket serve success')
     } catch (error) {
@@ -73,8 +73,12 @@ function createWindow() {
 
   // receive mqtt msg
   ipcMain.on('mqtt:msg', (evt, data) => {
-    sServe.socket.write(data)
-    mainWindow.webContents.send('send to sdk msg is', data)
+    try {
+      sServe.socket.write(data)
+      mainWindow.webContents.send('send to sdk msg is', data)
+    } catch (error) {
+      mainWindow.webContents.send('log', ' send to sdk failed' + data)
+    }
   })
 }
 // This method will be called when Electron has finished

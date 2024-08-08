@@ -9,12 +9,15 @@ export class SocketServer {
   constructor(port, mainWindow: BrowserWindow) {
     this.port = port
     this.server = net.createServer((socket) => {
+      this.socket = socket
       console.log('Client connected')
       socket.on('data', (data) => {
         console.log('Received:', data.toString())
-        mainWindow.webContents.send('sdk:msg', `receive data from sdk ${data.toString()}`)
-      })
+        // console.log(mainWindow.webContents)
 
+        // console.log("11111111")
+        mainWindow.webContents.send('sdk:msg', `${data.toString()}`)
+      })
       socket.on('end', () => {
         console.log('Client disconnected')
         mainWindow.webContents.send('log', `receive end from sdk `)
@@ -23,8 +26,6 @@ export class SocketServer {
       socket.on('error', (err) => {
         mainWindow.webContents.send('log', `receive error from sdk ${err.message}`)
       })
-
-      this.socket = socket
     })
   }
 
