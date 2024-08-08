@@ -26,7 +26,7 @@ const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
 let mqttCommand = ref<MQTTCommand>({ name: '', operation: '', value: '' })
-const obs_url = ref('')
+const obs_url = ref('localhost:4455')
 const obs_source = ref('')
 let ws_obs: OBSClient
 let e_mqtt: MQTT
@@ -50,22 +50,29 @@ function startSDK() {
 async function cameraConnection() {
   isCameraButtonDisabled.value = true
   isAlertMessageBoxVisible.value = true
-  startSDK()
-  setCameraInfo()
-  // const checkRes = checkOBSInput()
-  // if (!checkRes) {
-  //   isCameraButtonDisabled.value = false
-  //   isAlertMessageBoxVisible.value = false
-  //   obs_url.value = ''
-  //   obs_source.value = ''
-  //   return
-  // }
-  // await ws_obs.connect(`ws://${obs_url.value}`)
-  // cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  try {
+    const checkRes = checkOBSInput()
+    startSDK()
+    setCameraInfo()
+    if (!checkRes) {
+      isCameraButtonDisabled.value = false
+      isAlertMessageBoxVisible.value = false
+      obs_url.value = ''
+      obs_source.value = ''
+      throw error('input not valid!')
+    }
+    await ws_obs.connect(`ws://${obs_url.value}`)
+    cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  } catch (error) {
+    isCameraButtonDisabled.value = false
+    isAlertMessageBoxVisible.value = false
+    obs_url.value = ''
+    obs_source.value = ''
+    console.log('err or', error)
+  }
   isAlertMessageBoxVisible.value = false
   isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
   isCameraButtonDisabled.value = false
-  // UploadMsg()
 }
 
 function checkOBSInput() {
@@ -133,14 +140,14 @@ function ProcessMsg(e_mqtt: MQTT) {
   })
 }
 
-ipcRenderer.on('sdk:msg', (evt, data) => {
+ipcRenderer.on('sdk:msg', async (evt, data) => {
   console.log('receive sdk data', data)
   const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
   const updateParameters: UpdateParametersReq = {
     ticket_id: e_mqtt.clientId,
     operation: mqttCommand.value.operation,
     name: cameraRespMsg.name,
-    value: cameraRespMsg.message
+    value: mqttCommand.value.value
   }
   if (cameraRespMsg.status !== 'OK') {
     // throw error('SDK Return ERROR')
@@ -150,7 +157,8 @@ ipcRenderer.on('sdk:msg', (evt, data) => {
   console.log('upload log', JSON.stringify(updateParameters))
   sendMsgToCloudService.updateParam(updateParameters)
   // TODO Send image to cloud
-  // let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+  console.log('obs_img', obs_image)
   // sendMsgToCloudService.uploadImg({})
 })
 </script>
