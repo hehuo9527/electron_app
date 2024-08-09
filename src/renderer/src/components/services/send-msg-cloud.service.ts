@@ -30,41 +30,75 @@ export class SendMsgToCloudService {
   }
 
   async createTicket(req_body: any) {
-    const createTicketResp: CreateTicketResp = await this.httpClient.post(
-      '/ticket/create',
-      req_body
-    )
-    return createTicketResp
+    try {
+      const createTicketResp: CreateTicketResp = await this.httpClient.post(
+        '/ticket/create',
+        req_body
+      )
+      return createTicketResp
+    } catch (error) {
+      return {
+        data: null,
+        message: 'Error'
+      }
+    }
   }
 
   async readyTicket(ready_ticket_id: number) {
     const req_body = { ticket_id: String(ready_ticket_id) }
-    const createTicketResp: ReadyTicketResp = await this.httpClient.post('/ticket/ready', req_body)
-    return createTicketResp
-  }
-
-  async uploadImage(ready_ticket_id: number) {
-    const req_body = { ticket_id: String(ready_ticket_id) }
-    const createTicketResp: ReadyTicketResp = await this.httpClient.post(
-      '/remote/upload_image',
-      req_body
-    )
-    return createTicketResp
+    try {
+      const createTicketResp: ReadyTicketResp = await this.httpClient.post(
+        '/ticket/ready',
+        req_body
+      )
+      return createTicketResp
+    } catch (error) {
+      return {
+        data: null,
+        message: 'Error'
+      }
+    }
   }
 
   async updateParam(updateParams: UpdateParametersReq) {
-    const updateParamResp: UpdateParametersResp = await this.httpClient.post(
-      '/camera/param/log',
-      updateParams
-    )
-    return updateParamResp
+    try {
+      const updateParamResp: UpdateParametersResp = await this.httpClient.post(
+        '/camera/param/log',
+        updateParams
+      )
+      return updateParamResp
+    } catch (error) {
+      return {
+        data: null,
+        message: 'Error'
+      }
+    }
   }
 
   async uploadImg(uploadImgReq: unknown) {
-    const uploadImgResp: ReadyTicketResp = await this.httpClient.post(
-      '/user/image/upload',
-      uploadImgReq
-    )
-    return uploadImgResp
+    try {
+      const uploadImgResp: ReadyTicketResp = await this.httpClient.post(
+        '/user/image/upload',
+        uploadImgReq
+      )
+      return uploadImgResp
+    } catch (error) {
+      return {
+        data: null,
+        message: 'Error'
+      }
+    }
+  }
+
+  async updateCameraStatus(ticket_id: string, camera_status: string) {
+    const req_body = { ticket_id: ticket_id, camera_status: camera_status }
+    try {
+      return await this.httpClient.post('/camera/status/update', req_body)
+    } catch (error) {
+      return {
+        data: null,
+        message: 'Error'
+      }
+    }
   }
 }

@@ -104,12 +104,32 @@ async function requestRemoteSetting() {
   }
   const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
   let is_ticket_ready: ReadyTicketResp
-  if (ticket_resp.message == 'OK') {
-    is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
-    if (is_ticket_ready.message !== 'OK') {
-      throw error('ticket is not ready')
+  if (ticket_resp.message === 'Error') {
+    // TODO: Qiu
+    return
+  }
+
+  rInfo.value = {
+    remoterId: 'Current unknown where get ticket_id',
+    status: 'ready'
+  }
+
+
+  if (cInfo.value.status === 'DisConnected') {
+      await sendMsgToCloudService.updateCameraStatus(
+        'ticket_id',
+        'Disconnected'
+      )
     }
   }
+
+  is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
+    if (is_ticket_ready.message !== 'OK') {
+      throw error('ticket is not ready')
+      // TODO: Qiu
+    }
+  }
+
   // connect mqtt
   e_mqtt = new MQTT('test_user')
   e_mqtt.clientId = String(ticket_resp.data.ticket_id)
