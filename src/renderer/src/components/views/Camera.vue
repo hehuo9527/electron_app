@@ -137,11 +137,13 @@ async function requestRemoteSetting() {
   // }
 }
 
-function commandHandle(command: CommandData) {
-  ipcRenderer.send('mqtt:msg', JSON.stringify(command))
-  DisplayMessage(
-    `正在${command.operation == 'GET' ? '获取' : '设置'}相机${command.name}:${command.value}`
-  )
+function commandHandle(msg: string) {
+  // ipcRenderer.send('mqtt:msg', JSON.stringify(command))
+  // DisplayMessage(
+  //   `正在${command.operation == 'GET' ? '获取' : '设置'}相机${command.name}:${command.value}`
+  // )
+  ipcRenderer.send('mqtt:msg', msg)
+  DisplayMessage(`下发命令${msg}`)
 }
 
 function ticketHandle(ticket_msg: TicketStatusMsgData) {
@@ -155,17 +157,22 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.createConnection()
   e_mqtt.topicSubscribe()
   e_mqtt.client.on('message', (topic, message) => {
-    console.log(`Received message ${JSON.stringify(message)} from topic:${topic}`)
+    console.log(`Received message ${message} from topic:${topic}`)
 
-    mqttMsg.value = JSON.parse(message.toString())
+    // mqttMsg.value = JSON.parse(message.toString())
 
-    if (mqttMsg.value?.type == 'command') {
-      commandHandle(mqttMsg.value.data as CommandData)
-    } else if (mqttMsg.value?.type == 'ticket_status_msg') {
-      ticketHandle(mqttMsg.value.data as TicketStatusMsgData)
-    } else if (mqttMsg.value?.type == 'camera_status_msg') {
-      cameraHandle(mqttMsg.value.data as CameraStatusMsgData)
-    }
+    // if (mqttMsg.value?.type == 'command') {
+    //   console.log('CommandData ', mqttMsg.value.data)
+    // } else if (mqttMsg.value?.type == 'ticket_status_msg') {
+    //   console.log('TicketStatusMsgData ', mqttMsg.value.data)
+    //   ticketHandle(mqttMsg.value.data as TicketStatusMsgData)
+    //   DisplayMessage(mqttMsg.value.data)
+    // } else if (mqttMsg.value?.type == 'camera_status_msg') {
+    //   console.log('CameraStatusMsgData ', mqttMsg.value.data)
+    //   cameraHandle(mqttMsg.value.data as CameraStatusMsgData)
+    //   DisplayMessage(mqttMsg.value.data)
+    // }
+    commandHandle(message.toString())
     console.log('send msg success')
   })
 }
