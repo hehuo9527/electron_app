@@ -76,6 +76,9 @@ async function cameraConnection() {
     DisplayMessage('相机初始化失败,请检查USB')
     return
   }
+  isCameraButtonDisabled.value = false
+  isAlertMessageBoxVisible.value = false
+  isMessageBoxVisible.value = true
 }
 
 // function checkOBSInput() {
@@ -106,10 +109,12 @@ async function requestRemoteSetting() {
     DisplayMessage('创建订单失败')
     return
   }
+  const readyTicket = await sendMsgToCloudService.readyTicket(ticket_resp.data!.ticket_id)
   rInfo.value = {
     remoterId: String(ticket_resp.data!.ticket_id),
     status: 'waiting'
   }
+
   // connect
   try {
     let uInfo = auth.get()
