@@ -5,7 +5,7 @@ import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
 import { MQTT } from '@renderer/components/utils/mqttClient'
-import { MQTTCommand, ReadyTicketResp, UpdateParametersReq } from '@src/types/cloudInfoTypes'
+import { MQTTMsg, ReadyTicketResp, UpdateParametersReq } from '@src/types/cloudInfoTypes'
 import { OBSClient } from '@renderer/components/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
@@ -25,10 +25,10 @@ const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
-let mqttCommand = ref<MQTTCommand>({ name: '', operation: '', value: '' })
+let mqttCommand = ref<MQTTMsg>()
 const obs_url = ref('localhost:4455')
-const obs_source = ref('')
-let ws_obs: OBSClient
+const obs_source = ref('显示器采集')
+let ws_obs: OBSClient = new OBSClient()
 let e_mqtt: MQTT
 const { t } = useI18n()
 const sendMsgToCloudService = new SendMsgToCloudService()
@@ -68,25 +68,20 @@ async function cameraConnection() {
     isAlertMessageBoxVisible.value = false
     obs_url.value = ''
     obs_source.value = ''
-    console.log('err or', error)
   }
+
   isAlertMessageBoxVisible.value = false
   isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
   isCameraButtonDisabled.value = false
 }
 
 function checkOBSInput() {
-  const regex = /^((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|(\[([0-9a-fA-F:]{2,39})\])):([0-9]{1,5})$/
   if (obs_url.value === '') {
     alert(t('未设置OBS IP地址'))
     return false
   }
   if (obs_source.value === '') {
     alert('没有设置OBS的信号源')
-    return false
-  }
-  if (!regex.test(obs_url.value.trim())) {
-    alert('OBS的IP:PORT格式不正确')
     return false
   }
   return true
@@ -129,25 +124,21 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.client.on('message', (topic, message) => {
     mqttCommand.value = JSON.parse(message.toString())
     console.log(`Received message ${JSON.stringify(mqttCommand.value)} from topic:${topic}`)
-    let sdkCommand: CameraOperationReqMsg = {
-      name: mqttCommand.value.name,
-      operation: mqttCommand.value.operation,
-      val: mqttCommand.value.value
-    }
-    console.log('vue send msg is:', JSON.stringify(sdkCommand))
-    ipcRenderer.send('mqtt:msg', JSON.stringify(sdkCommand))
+
+    // console.log('vue send msg is:', JSON.stringify(sdkCommand))
+    // ipcRenderer.send('mqtt:msg', JSON.stringify(sdkCommand))
     console.log('send msg success')
   })
 }
 
-ipcRenderer.on('sdk:msg', async (evt, data) => {
+async function SDKMsgHandle(evt, data) {
   console.log('receive sdk data', data)
   const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
-  const updateParameters: UpdateParametersReq = {
-    ticket_id: e_mqtt.clientId,
-    operation: mqttCommand.value.operation,
-    name: cameraRespMsg.name,
-    value: mqttCommand.value.value
+  const updateParameters: any = {
+    // ticket_id: e_mqtt.clientId
+    // operation: mqttCommand.value.operation,
+    // name: cameraRespMsg.name,
+    // value: mqttCommand.value.value
   }
   if (cameraRespMsg.status !== 'OK') {
     // throw error('SDK Return ERROR')
@@ -158,9 +149,13 @@ ipcRenderer.on('sdk:msg', async (evt, data) => {
   sendMsgToCloudService.updateParam(updateParameters)
   // TODO Send image to cloud
   let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
-  console.log('obs_img', obs_image)
+  console.log('obs_img msg get success')
   // sendMsgToCloudService.uploadImg({})
-})
+}
+
+function ResigterListener() {
+  ipcRenderer.on('sdk:msg', SDKMsgHandle)
+}
 </script>
 <template>
   <div class="camera-page">

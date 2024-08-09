@@ -40,47 +40,19 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-  // 处理最小化消息
-  ipcMain.on('minimize', () => {
-    mainWindow.minimize()
-  })
-  // 处理关闭消息
-  ipcMain.on('close', () => {
-    mainWindow.close()
-  })
-
-  // start sdk
-  ipcMain.on('startSDK', async () => {
-    try {
-      const cppProcess = startSDK(mainWindow)
-    } catch (error) {
-      mainWindow.webContents.send('log', error)
-    }
-  })
 
   // start socket serve
-  let sServe: SocketServer
-  mainWindow.webContents.on('did-finish-load', () => {
-    console.log('Window content loaded')
-    try {
-      sServe = new SocketServer(3333, mainWindow)
-      sServe.start()
-      mainWindow.webContents.send('log', 'start socket serve success')
-    } catch (error) {
-      mainWindow.webContents.send('log', 'start socket serve failed')
-    }
-  })
-
-  // receive mqtt msg
-  ipcMain.on('mqtt:msg', (evt, data) => {
-    try {
-      console.log('prepare to send msg to sdk', data)
-      sServe.socket.write(data)
-      mainWindow.webContents.send('send to sdk msg is', data)
-    } catch (error) {
-      mainWindow.webContents.send('log', ' send to sdk failed' + data)
-    }
-  })
+  StartSocketServe(mainWindow)
+    .then((sServer) => {
+      if (sServer) {
+        Registlistener(mainWindow, sServer)
+      } else {
+        mainWindow.webContents.send('error', 'Start Serve Failed')
+      }
+    })
+    .catch((error) => {
+      console.error('Error occurred while starting the socket server:', error)
+    })
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -116,3 +88,49 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+function Registlistener(mainWindow: BrowserWindow, sServer: SocketServer) {
+  // 处理最小化消息
+  ipcMain.on('minimize', () => {
+    mainWindow.minimize()
+  })
+  // 处理关闭消息
+  ipcMain.on('close', () => {
+    sServer.stop()
+    mainWindow.close()
+  })
+
+  // start sdk
+  ipcMain.on('startSDK', async () => {
+    try {
+      const cppProcess = startSDK(mainWindow)
+    } catch (error) {
+      mainWindow.webContents.send('log', error)
+    }
+  })
+
+  ipcMain.on('mqtt:msg', (evt, data) => {
+    try {
+      console.log('prepare to send msg to sdk', data)
+      sServer.socket.write(data)
+      mainWindow.webContents.send('send to sdk msg is', data)
+    } catch (error) {
+      mainWindow.webContents.send('log', ' send to sdk failed' + data)
+    }
+  })
+}
+
+function StartSocketServe(mainWindow: BrowserWindow): Promise<SocketServer | null> {
+  return new Promise((resolve, reject) => {
+    mainWindow.webContents.once('did-finish-load', () => {
+      try {
+        const sServe = new SocketServer(3333, mainWindow)
+        sServe.start()
+        mainWindow.webContents.send('log', 'start socket serve success')
+        resolve(sServe)
+      } catch (error) {
+        mainWindow.webContents.send('log', 'start socket serve failed')
+        reject(null)
+      }
+    })
+  })
+}

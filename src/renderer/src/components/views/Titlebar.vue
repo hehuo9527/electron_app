@@ -14,21 +14,17 @@ const { t, locale } = useI18n()
 
 const userName = ref('')
 const selectLocale = ref('zh')
-const localeOptions = [
-  {
-    value: 'zh',
-    label: '中文'
-  },
-  {
-    value: 'en',
-    label: 'English'
+
+function changeLang() {
+  if (selectLocale.value == 'zh') {
+    console.log(selectLocale.value)
+    selectLocale.value = 'en'
+    locale.value = 'en'
+  } else {
+    selectLocale.value = 'zh'
+    locale.value = 'zh'
   }
-]
-
-watch(selectLocale, (newValue) => {
-  locale.value = newValue
-})
-
+}
 emitter.on('login-event', (value: any) => {
   const uInfo: UserInfo = aService.get()
   console.log('uInfo', uInfo)
@@ -62,20 +58,7 @@ ipcRenderer.on('log', (event, data) => {
               <CameraFilled />
             </el-icon>
             <span>{{ t('远程相机设置') }}</span>
-            <el-select
-              v-model="selectLocale"
-              class="els"
-              placeholder="中文"
-              :popper-append-to-body="false"
-            >
-              <el-option
-                v-for="item in localeOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
+            <button type="label" class="els" @click="changeLang">{{ selectLocale }}</button>
           </div>
         </el-col>
         <el-col :span="13">
@@ -105,13 +88,15 @@ ipcRenderer.on('log', (event, data) => {
 #titlebar {
   background-color: rgb(64, 64, 64);
   display: block;
-  height: 32px;
+  height: 40px;
   width: calc(100% - 2px);
 }
 
 #titlebar {
+  display: flex;
   padding: 4px;
   color: #fff;
+  align-items: center;
 }
 
 #titlebar #drag-region {
@@ -200,14 +185,13 @@ ipcRenderer.on('log', (event, data) => {
   width: 50px !important;
 }
 
-.el-select {
-  margin-left: 15px;
-  width: 100px !important;
+.els {
+  background-color: rgb(64, 64, 64);
   -webkit-app-region: no-drag;
-}
-.els ::v-deep .el-select__wrapper {
-  border-radius: 4px;
-  margin: 2px 0;
-  min-height: 0px !important;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
 }
 </style>

@@ -6,4 +6,5 @@ out
 test_socket.py
 build/*.bat
 *.py
+*.cpp
 CameraSDK_Release

@@ -1,15 +1,15 @@
 import OBSWebSocket from 'obs-websocket-js'
 
 export class OBSClient {
-  private obs: OBSWebSocket
-  private isConnected: boolean
+  obs: OBSWebSocket
+  isConnected: boolean
 
   constructor() {
     this.obs = new OBSWebSocket()
     this.isConnected = false
   }
 
-  async connect(url: string, password?: string, customeRpcVersion = 1): Promise<void> {
+  async connect(url: string, password: string = '', customeRpcVersion = 1): Promise<void> {
     try {
       const { obsWebSocketVersion, negotiatedRpcVersion } = await this.obs.connect(url, password, {
         rpcVersion: customeRpcVersion
