@@ -190,13 +190,15 @@ async function SDKMsgHandle(evt, data) {
     cInfo.value.status = 'Disconnect'
     DisplayMessage('相机断开了')
   } else {
-    let command = mqttMsg.value?.data as CommandData
+    // let command = mqttMsg.value?.data as CommandData
+    let resp_SDK = JSON.parse(data)
     const updateParameters: any = {
       ticket_id: e_mqtt.clientId,
-      operation: command.operation,
+      operation: 'SET',
       name: cameraRespMsg.name,
-      value: command.value
+      value: cameraRespMsg.message
     }
+    DisplayMessage(`上报消息:${JSON.stringify(updateParameters).toString()}`)
     if (cameraRespMsg.status !== 'OK') {
       DisplayMessage('相机消息设置不成功')
       // throw error('SDK Return ERROR')
@@ -216,6 +218,7 @@ async function SDKMsgHandle(evt, data) {
     // TODO Send image to cloud
     let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
     console.log('obs_img msg get success')
+    DisplayMessage('上传图片')
     // sendMsgToCloudService.uploadImg({})
   }
 }
