@@ -58,7 +58,7 @@ ipcRenderer.on('log', (event, data) => {
               <CameraFilled />
             </el-icon>
             <span>{{ t('远程相机设置') }}</span>
-            <button type="label" class="els" @click="changeLang">{{ selectLocale }}</button>
+            <button class="els" @click="changeLang">{{ selectLocale }}</button>
           </div>
         </el-col>
         <el-col :span="13">
@@ -87,7 +87,6 @@ ipcRenderer.on('log', (event, data) => {
 <style scoped>
 #titlebar {
   background-color: rgb(64, 64, 64);
-  display: block;
   height: 40px;
   width: calc(100% - 2px);
 }
@@ -128,6 +127,10 @@ ipcRenderer.on('log', (event, data) => {
   justify-content: flex-end;
   align-items: center;
   width: 100%;
+}
+
+.el-col {
+  display: flex;
 }
 
 #window-title span {

@@ -5,11 +5,18 @@ import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
 import { MQTT } from '@renderer/components/utils/mqttClient'
-import { MQTTMsg, ReadyTicketResp, UpdateParametersReq } from '@src/types/cloudInfoTypes'
+import {
+  CameraStatusMsgData,
+  CommandData,
+  MQTTMsg,
+  ReadyTicketResp,
+  TicketStatusMsgData
+} from '@src/types/cloudInfoTypes'
 import { OBSClient } from '@renderer/components/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
 import { error } from 'console'
+import { Action, ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 
 const cInfo = ref<CameraInfo>({
   camera: '',
@@ -25,14 +32,14 @@ const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
-let mqttCommand = ref<MQTTMsg>()
+let mqttMsg = ref<MQTTMsg>()
 const obs_url = ref('localhost:4455')
 const obs_source = ref('显示器采集')
 let ws_obs: OBSClient = new OBSClient()
 let e_mqtt: MQTT
 const { t } = useI18n()
 const sendMsgToCloudService = new SendMsgToCloudService()
-
+const centerDialogVisible = ref(false)
 function setCameraInfo() {
   // update camera info and get a picture
   cInfo.value = {
@@ -52,22 +59,20 @@ async function cameraConnection() {
   isAlertMessageBoxVisible.value = true
   try {
     const checkRes = checkOBSInput()
-    startSDK()
-    setCameraInfo()
     if (!checkRes) {
       isCameraButtonDisabled.value = false
       isAlertMessageBoxVisible.value = false
-      obs_url.value = ''
-      obs_source.value = ''
-      throw error('input not valid!')
+      return
     }
+    startSDK()
+    setCameraInfo()
     await ws_obs.connect(`ws://${obs_url.value}`)
     cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   } catch (error) {
     isCameraButtonDisabled.value = false
     isAlertMessageBoxVisible.value = false
-    obs_url.value = ''
-    obs_source.value = ''
+    DisplayMessage('连接OBS失败,请检查')
+    return
   }
 
   isAlertMessageBoxVisible.value = false
@@ -77,11 +82,11 @@ async function cameraConnection() {
 
 function checkOBSInput() {
   if (obs_url.value === '') {
-    alert(t('未设置OBS IP地址'))
+    DisplayMessage(t('未设置OBS IP地址'))
     return false
   }
   if (obs_source.value === '') {
-    alert('没有设置OBS的信号源')
+    DisplayMessage('没有设置OBS的信号源')
     return false
   }
   return true
@@ -107,7 +112,6 @@ async function requestRemoteSetting() {
   }
   // connect mqtt
   e_mqtt = new MQTT('test_user')
-  console.log('ticket_resp', ticket_resp)
   e_mqtt.clientId = String(ticket_resp.data.ticket_id)
   e_mqtt.topic = ticket_resp.data.topic
 
@@ -117,44 +121,82 @@ async function requestRemoteSetting() {
   ProcessMsg(e_mqtt)
 }
 
+function commandHandle(command: CommandData) {
+  ipcRenderer.send('mqtt:msg', JSON.stringify(command))
+  DisplayMessage(
+    `正在${command.operation == 'GET' ? '获取' : '设置'}相机${command.name}:${command.value}`
+  )
+}
+
+function ticketHandle(ticket_msg: TicketStatusMsgData) {
+  centerDialogVisible.value = true
+}
+
+function cameraHandle(camera_msg: CameraStatusMsgData) {}
+
 function ProcessMsg(e_mqtt: MQTT) {
   // listen mqtt
   e_mqtt.createConnection()
   e_mqtt.topicSubscribe()
   e_mqtt.client.on('message', (topic, message) => {
-    mqttCommand.value = JSON.parse(message.toString())
-    console.log(`Received message ${JSON.stringify(mqttCommand.value)} from topic:${topic}`)
+    console.log(`Received message ${JSON.stringify(message)} from topic:${topic}`)
 
-    // console.log('vue send msg is:', JSON.stringify(sdkCommand))
-    // ipcRenderer.send('mqtt:msg', JSON.stringify(sdkCommand))
+    mqttMsg.value = JSON.parse(message.toString())
+
+    if (mqttMsg.value?.type == 'command') {
+      commandHandle(mqttMsg.value.data as CommandData)
+    } else if (mqttMsg.value?.type == 'ticket_status_msg') {
+      ticketHandle(mqttMsg.value.data as TicketStatusMsgData)
+    } else if (mqttMsg.value?.type == 'camera_status_msg') {
+      cameraHandle(mqttMsg.value.data as CameraStatusMsgData)
+    }
     console.log('send msg success')
   })
 }
 
 async function SDKMsgHandle(evt, data) {
   console.log('receive sdk data', data)
+  DisplayMessage(`受到相机返回消息${data}`)
   const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
+  let command = mqttMsg.value?.data as CommandData
   const updateParameters: any = {
-    // ticket_id: e_mqtt.clientId
-    // operation: mqttCommand.value.operation,
-    // name: cameraRespMsg.name,
-    // value: mqttCommand.value.value
+    ticket_id: e_mqtt.clientId,
+    operation: command.operation,
+    name: cameraRespMsg.name,
+    value: command.value
   }
   if (cameraRespMsg.status !== 'OK') {
+    DisplayMessage('相机消息设置不成功')
     // throw error('SDK Return ERROR')
     updateParameters.value = '-1'
   }
 
   console.log('upload log', JSON.stringify(updateParameters))
-  sendMsgToCloudService.updateParam(updateParameters)
+  let res = await sendMsgToCloudService.updateParam(updateParameters)
   // TODO Send image to cloud
   let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   console.log('obs_img msg get success')
   // sendMsgToCloudService.uploadImg({})
 }
 
+function DisplayMessage(meesage) {
+  ElNotification({
+    message: meesage,
+    offset: 100,
+    duration: 5000
+  })
+}
+
 function ResigterListener() {
   ipcRenderer.on('sdk:msg', SDKMsgHandle)
+}
+ResigterListener()
+
+function test() {
+  centerDialogVisible.value = true
+}
+function dialogBtn(res: boolean) {
+  centerDialogVisible.value = false
 }
 </script>
 <template>
@@ -166,6 +208,7 @@ function ResigterListener() {
         <el-input v-model="obs_source" placeholder="请输入OBS的信号源"></el-input>
       </el-col>
       <el-col :span="10" style="text-align: right">
+        <button @click="test">test</button>
         <el-button
           type="primary"
           plain
@@ -227,6 +270,15 @@ function ResigterListener() {
       </div>
     </div>
   </div>
+  <el-dialog v-model="centerDialogVisible" width="500" align-center>
+    <span>设置效果满意,关闭订单?</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogBtn(false)">NO</el-button>
+        <el-button type="primary" @click="dialogBtn(true)"> YES </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -297,8 +349,8 @@ el-button {
   margin: 10px 0 0 100px;
 }
 .camera-img-box {
-  height: 100%;
-  width: 100%;
+  height: 480px;
+  width: 640 px;
   border: 1px solid #ccc;
 }
 
