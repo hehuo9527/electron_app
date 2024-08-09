@@ -9,32 +9,32 @@ import {
   CameraStatusMsgData,
   CommandData,
   MQTTMsg,
-  ReadyTicketResp,
   TicketStatusMsgData
 } from '@src/types/cloudInfoTypes'
 import { OBSClient } from '@renderer/components/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
-import { error } from 'console'
-import { Action, ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { ElNotification } from 'element-plus'
+import { AuthService } from '../utils/authService'
 
 const cInfo = ref<CameraInfo>({
   camera: '',
   status: '',
-  clientId: '',
   imgPath: ''
 })
 const rInfo = ref<RemoterInfo>({
   remoterId: '...',
   status: 'Remote Pairing...'
 })
+const auth = new AuthService()
+const isReady = ref(false)
 const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
 const isRemoterButtonDisabled = ref(false) //禁用远程控制
 const isCameraButtonDisabled = ref(false) //禁用连接相机
 let mqttMsg = ref<MQTTMsg>()
 const obs_url = ref('localhost:4455')
-const obs_source = ref('显示器采集')
+const obs_source = ref('视频采集设备')
 let ws_obs: OBSClient = new OBSClient()
 let e_mqtt: MQTT
 const { t } = useI18n()
@@ -42,103 +42,94 @@ const sendMsgToCloudService = new SendMsgToCloudService()
 const centerDialogVisible = ref(false)
 function setCameraInfo() {
   // update camera info and get a picture
+  // TODO need update when sdk return
   cInfo.value = {
     camera: 'A7M4-123456678',
     status: 'Connected',
-    clientId: 'crsu-0001',
     imgPath: mockImg
   }
 }
-
-function startSDK() {
-  ipcRenderer.send('startSDK')
-}
-
 async function cameraConnection() {
   isCameraButtonDisabled.value = true
   isAlertMessageBoxVisible.value = true
   try {
-    const checkRes = checkOBSInput()
-    if (!checkRes) {
-      isCameraButtonDisabled.value = false
-      isAlertMessageBoxVisible.value = false
-      return
+    // const checkRes = checkOBSInput()
+    // if (!checkRes) {
+    //   isCameraButtonDisabled.value = false
+    //   isAlertMessageBoxVisible.value = false
+    //   return
+    // }
+    const response = ipcRenderer.sendSync('startSDK')
+    console.log('startSDK', response)
+    if (response == 'success') {
+      DisplayMessage('启动SDK成功')
+    } else {
+      // TODO
+      DisplayMessage('需要重启PC App')
     }
-    startSDK()
     setCameraInfo()
     await ws_obs.connect(`ws://${obs_url.value}`)
     cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   } catch (error) {
     isCameraButtonDisabled.value = false
     isAlertMessageBoxVisible.value = false
-    DisplayMessage('连接OBS失败,请检查')
+    DisplayMessage('相机初始化失败,请检查USB')
     return
   }
-
-  isAlertMessageBoxVisible.value = false
-  isMessageBoxVisible.value = !isAlertMessageBoxVisible.value
-  isCameraButtonDisabled.value = false
 }
 
-function checkOBSInput() {
-  if (obs_url.value === '') {
-    DisplayMessage(t('未设置OBS IP地址'))
-    return false
-  }
-  if (obs_source.value === '') {
-    DisplayMessage('没有设置OBS的信号源')
-    return false
-  }
-  return true
-}
+// function checkOBSInput() {
+//   if (obs_url.value === '') {
+//     DisplayMessage(t('未设置OBS IP地址'))
+//     return false
+//   }
+//   if (obs_source.value === '') {
+//     DisplayMessage('没有设置OBS的信号源')
+//     return false
+//   }
+//   return true
+// }
 
 async function requestRemoteSetting() {
-  isRemoterButtonDisabled.value = true
-  rInfo.value = {
-    remoterId: 'crsp-0001',
-    status: 'Remote Setting'
+  if (isReady.value == false) {
+    DisplayMessage('相机准备未完成')
+    return
   }
+  isRemoterButtonDisabled.value = true
+  // TODO description ,camera_id display
   const req_create_ticket = {
     camera_id: 'I7M4 (123456678)',
     description: 'help to do something'
   }
   const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
-  let is_ticket_ready: ReadyTicketResp
   if (ticket_resp.message === 'Error') {
-    // TODO: Qiu
+    DisplayMessage('创建订单失败')
+    return
+  }
+  rInfo.value = {
+    remoterId: String(ticket_resp.data!.ticket_id),
+    status: 'waiting'
+  }
+  // connect
+  try {
+    let uInfo = auth.get()
+    e_mqtt = new MQTT(uInfo.username)
+    e_mqtt.clientId = String(ticket_resp.data!.ticket_id)
+    e_mqtt.topic = ticket_resp.data!.topic
+    rInfo.value.status = 'Remote Setting Completed'
+    isRemoterButtonDisabled.value = false
+    ProcessMsg(e_mqtt)
+    DisplayMessage('远程服务订单创建成功,等待接单')
+  } catch (error) {
+    DisplayMessage('MQTT连接失败')
     return
   }
 
-  rInfo.value = {
-    remoterId: 'Current unknown where get ticket_id',
-    status: 'ready'
-  }
-
-
-  if (cInfo.value.status === 'DisConnected') {
-      await sendMsgToCloudService.updateCameraStatus(
-        'ticket_id',
-        'Disconnected'
-      )
-    }
-  }
-
-  is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
-    if (is_ticket_ready.message !== 'OK') {
-      throw error('ticket is not ready')
-      // TODO: Qiu
-    }
-  }
-
-  // connect mqtt
-  e_mqtt = new MQTT('test_user')
-  e_mqtt.clientId = String(ticket_resp.data.ticket_id)
-  e_mqtt.topic = ticket_resp.data.topic
-
-  cInfo.value.clientId = String(ticket_resp.data.ticket_id)
-  rInfo.value.status = 'Remote Setting Completed'
-  isRemoterButtonDisabled.value = false
-  ProcessMsg(e_mqtt)
+  // is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
+  // if (is_ticket_ready.message !== 'OK') {
+  //   throw error('ticket is not ready')
+  //   // TODO: Qiu
+  // }
 }
 
 function commandHandle(command: CommandData) {
@@ -176,27 +167,45 @@ function ProcessMsg(e_mqtt: MQTT) {
 
 async function SDKMsgHandle(evt, data) {
   console.log('receive sdk data', data)
-  DisplayMessage(`受到相机返回消息${data}`)
+  DisplayMessage(`收到相机返回消息${data}`)
   const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
-  let command = mqttMsg.value?.data as CommandData
-  const updateParameters: any = {
-    ticket_id: e_mqtt.clientId,
-    operation: command.operation,
-    name: cameraRespMsg.name,
-    value: command.value
-  }
-  if (cameraRespMsg.status !== 'OK') {
-    DisplayMessage('相机消息设置不成功')
-    // throw error('SDK Return ERROR')
-    updateParameters.value = '-1'
-  }
+  if (cameraRespMsg.name.match('onConnect')) {
+    isReady.value = true
+    DisplayMessage('相机连接成功!')
+    cInfo.value.camera = cameraRespMsg.message
+    cInfo.value.status = 'Connect'
+  } else if (cameraRespMsg.name.match('disConnect')) {
+    cInfo.value.status = 'Disconnect'
+    DisplayMessage('相机断开了')
+  } else {
+    let command = mqttMsg.value?.data as CommandData
+    const updateParameters: any = {
+      ticket_id: e_mqtt.clientId,
+      operation: command.operation,
+      name: cameraRespMsg.name,
+      value: command.value
+    }
+    if (cameraRespMsg.status !== 'OK') {
+      DisplayMessage('相机消息设置不成功')
+      // throw error('SDK Return ERROR')
+      updateParameters.value = '-1'
+    }
 
-  console.log('upload log', JSON.stringify(updateParameters))
-  let res = await sendMsgToCloudService.updateParam(updateParameters)
-  // TODO Send image to cloud
-  let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
-  console.log('obs_img msg get success')
-  // sendMsgToCloudService.uploadImg({})
+    console.log('upload log', JSON.stringify(updateParameters))
+    await sendMsgToCloudService
+      .updateParam(updateParameters)
+      .then(() => {
+        DisplayMessage('命令上报成功')
+      })
+      .catch((error) => {
+        DisplayMessage(`命令上报失败:${error}`)
+      })
+
+    // TODO Send image to cloud
+    let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+    console.log('obs_img msg get success')
+    // sendMsgToCloudService.uploadImg({})
+  }
 }
 
 function DisplayMessage(meesage) {
@@ -223,12 +232,12 @@ function dialogBtn(res: boolean) {
   <div class="camera-page">
     <el-row>
       <div />
-      <el-col :span="10" class="obs_config">
+      <!-- <el-col :span="10" class="obs_config">
         <el-input v-model="obs_url" placeholder="请输入OBS的IP:PORT"></el-input>
         <el-input v-model="obs_source" placeholder="请输入OBS的信号源"></el-input>
-      </el-col>
+      </el-col> -->
       <el-col :span="10" style="text-align: right">
-        <button @click="test">test</button>
+        <!-- <button @click="test">test</button> -->
         <el-button
           type="primary"
           plain
@@ -269,10 +278,10 @@ function dialogBtn(res: boolean) {
             <b>{{ t('状态') }}</b
             >{{ cInfo?.status }}
           </p>
-          <p>
+          <!-- <p>
             <b>{{ t('客户端ID') }}</b
             >{{ cInfo?.clientId }}
-          </p>
+          </p> -->
         </div>
         <div class="message-box">
           <p>

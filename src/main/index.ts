@@ -100,14 +100,14 @@ function Registlistener(mainWindow: BrowserWindow, sServer: SocketServer) {
   })
 
   // start sdk
-  ipcMain.on('startSDK', async () => {
+  ipcMain.on('startSDK', async (evt, data) => {
     try {
       const cppProcess = startSDK(mainWindow)
+      evt.returnValue = 'success'
     } catch (error) {
       mainWindow.webContents.send('log', error)
     }
   })
-
   ipcMain.on('mqtt:msg', (evt, data) => {
     try {
       console.log('prepare to send msg to sdk', data)

@@ -1,7 +1,6 @@
 export interface CameraInfo {
   camera: string
   status: string
-  clientId: string
   imgPath: string
 }
 
