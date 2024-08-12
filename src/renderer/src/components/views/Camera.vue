@@ -98,7 +98,6 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.topicSubscribe()
   e_mqtt.client.on('message', (topic, message) => {
     console.log(`Received message ${message} from topic:${topic}`)
-
     mqttMsg.value = JSON.parse(message.toString())
     if (mqttMsg.value?.type == 'command') {
       console.log('CommandData ', mqttMsg.value.data)
@@ -131,11 +130,10 @@ async function SDKMsgHandle(evt, data) {
     sendMsgToCloudService.updateCameraStatus(e_mqtt.clientId, 'disconnect')
     DisplayMessage('相机断开了')
   } else {
-    // let command = mqttMsg.value?.data as CommandData
-    let resp_SDK = JSON.parse(data)
+    let command = mqttMsg.value?.data as CommandData
     const updateParameters: any = {
       ticket_id: e_mqtt.clientId,
-      operation: 'SET',
+      operation: command.operation,
       name: cameraRespMsg.name,
       value: cameraRespMsg.message
     }
