@@ -1,8 +1,8 @@
 export interface CameraInfo {
-  camera: string
+  name: any
   status: string
-  imgPath: string
-}
+  remoteStatus: string
+} 
 
 export interface CameraOperationReqMsg {
   name: string

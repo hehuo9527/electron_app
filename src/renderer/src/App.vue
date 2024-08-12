@@ -7,9 +7,8 @@ router.push('/Login')
 
 <template>
   <div class="common-layout">
-    <el-row>
-      <Titlebar />
-    </el-row>
+    <Titlebar />
+
     <el-container>
       <el-container>
         <el-main>

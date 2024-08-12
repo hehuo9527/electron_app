@@ -33,7 +33,7 @@
     "element-plus": "^2.7.2",
     "mitt": "^3.0.1",
     "mqtt": "^5.8.1",
-    "phantomjs": "^2.1.1",
+    "phantomjs": "^2.1.7",
     "vue": "^3.3.8"
   },
   "devDependencies": {

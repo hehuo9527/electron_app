@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ipcRenderer } from 'electron'
@@ -159,4 +159,4 @@ const onSubmit = async () => {
 b {
   font-weight: bold !important;
 }
-</style>
+</style> -->

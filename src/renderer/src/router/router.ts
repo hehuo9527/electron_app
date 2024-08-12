@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Camera from '../components/views/Camera.vue'
 import Login from '../components/views/Login.vue'
+import UserLogin from '@renderer/components/views/UserLogin.vue'
 
 export const routes = [
   {
@@ -11,7 +12,7 @@ export const routes = [
   {
     path: '/Login',
     name: 'Login',
-    component: Login
+    component: UserLogin
   }
 ]
 const router = createRouter({

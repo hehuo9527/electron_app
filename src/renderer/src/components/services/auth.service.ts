@@ -12,5 +12,6 @@ export async function auth(lInfo: LoginInfo): Promise<any> {
     username: lInfo.username,
     password: lInfo.password
   })
+  console.log('resp', response)
   return response
 }

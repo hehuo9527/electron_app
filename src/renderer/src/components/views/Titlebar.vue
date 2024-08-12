@@ -12,10 +12,11 @@ const router = useRouter()
 const aService = new AuthService()
 const { t, locale } = useI18n()
 
-const userName = ref('')
+const userName = ref('111111111111')
 const selectLocale = ref('zh')
 
 function changeLang() {
+  console.log('111')
   if (selectLocale.value == 'zh') {
     console.log(selectLocale.value)
     selectLocale.value = 'en'
@@ -25,6 +26,7 @@ function changeLang() {
     locale.value = 'zh'
   }
 }
+
 emitter.on('login-event', (value: any) => {
   const uInfo: UserInfo = aService.get()
   console.log('uInfo', uInfo)
@@ -49,152 +51,90 @@ ipcRenderer.on('log', (event, data) => {
 </script>
 
 <template>
-  <header id="titlebar">
-    <div id="drag-region">
-      <el-row>
-        <el-col :span="8">
-          <div id="window-title">
-            <el-icon style="margin-right: 4px; font-size: 20px">
-              <CameraFilled />
-            </el-icon>
-            <span>{{ t('远程相机设置') }}</span>
-            <button class="els" @click="changeLang">{{ selectLocale }}</button>
-          </div>
-        </el-col>
-        <el-col :span="13">
-          <div v-show="isUserDisable" class="user-button">
-            <el-icon style="margin: 0 4px 0 0"> <UserFilled /></el-icon>
-            <span>
-              {{ userName }}
-            </span>
-          </div>
-        </el-col>
-        <div class="window-controls">
-          <div v-show="isUserDisable" id="exit-button" class="button" @click="loginOut">
-            {{ t('登出') }}
-          </div>
-          <div class="button close-button" @click="closeWindow">
-            <el-icon>
-              <CloseBold />
-            </el-icon>
-          </div>
-        </div>
-      </el-row>
+  <div class="drag-region">
+    <div class="window-title">
+      <img class="img-logo" src="../../assets/logo.png" />
+      <span>{{ t('远程相机设置') }}</span>
     </div>
-  </header>
+
+    <div class="btn-area">
+      <div @click="changeLang" class="lang">
+        <el-icon><Switch /></el-icon>
+        <span>{{ selectLocale }}</span>
+      </div>
+      <div v-if="isUserDisable" class="user-info">
+        <el-icon style="margin: 0 4px 0 0"> <UserFilled /></el-icon>
+        <span> {{ userName }}</span>
+      </div>
+      <div class="close" @click="closeWindow">
+        <el-icon> <CloseBold /></el-icon>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-#titlebar {
-  background-color: rgb(64, 64, 64);
-  height: 40px;
-  width: calc(100% - 2px);
-}
-
-#titlebar {
-  display: flex;
-  padding: 4px;
-  color: #fff;
-  align-items: center;
-}
-
-#titlebar #drag-region {
+.drag-region {
   width: 100%;
+  height: 70px;
+  background-color: black;
+  display: flex;
+  flex-direction: row;
   -webkit-app-region: drag;
+  align-items: center;
 }
-
-#titlebar #drag-region {
-  display: grid;
-}
-
-#window-title {
-  grid-column: 1;
+.drag-region * {
   display: flex;
   align-items: center;
-  overflow: hidden;
-  font-family: 'Segoe UI', sans-serif;
-  span {
-    width: 175px;
-  }
 }
-
-.maximized #window-title {
-  margin-left: 12px;
+.window-title {
+  justify-content: flex-start;
+  width: 50%;
 }
-
-.user-button {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
+.window-title .img-logo {
+  height: 30px;
+  margin-left: 55px;
 }
-
-.el-col {
-  display: flex;
-}
-
-#window-title span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.window-controls {
-  display: flex;
-  width: 130px;
-  margin-left: 10px;
-  justify-content: flex-end;
-}
-
-.window-controls .button {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  -webkit-app-region: no-drag;
-  padding: 0px 4px;
-}
-
-.window-controls .button {
-  user-select: none;
-}
-
-.window-controls .button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.window-controls .button:active {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.close-button:hover,
-#exit-button:hover {
-  background: #e81123 !important;
-}
-
-.close-button:active,
-#exit-button:hover {
-  background: #f1707a !important;
-}
-
-.close-button:active .icon {
-  filter: invert(1);
-}
-
-#exit-button:active .icon {
-  filter: invert(1);
-}
-
-.close-button {
-  width: 50px !important;
-}
-
-.els {
-  background-color: rgb(64, 64, 64);
-  -webkit-app-region: no-drag;
+.window-title > span {
+  font-size: larger;
   color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 16px;
+  margin-left: 20px;
+}
+
+.btn-area {
+  width: 55%;
+  color: white;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.lang {
+  display: flex;
+  align-items: center;
+  width: 15%;
+  font-size: 20px;
+}
+
+.lang > i {
+  -webkit-app-region: no-drag;
+  margin-right: 10px;
+}
+
+.user-info {
+  color: white;
+  font-size: 20px;
+}
+
+.close {
+  -webkit-app-region: no-drag;
+  font-size: 25px;
+  height: 45px;
+  width: 45px;
+  margin-left: 15px;
+  justify-content: center;
+}
+
+.close:hover {
+  background-color: red;
 }
 </style>

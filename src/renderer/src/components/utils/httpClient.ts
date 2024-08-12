@@ -25,26 +25,22 @@ export class HttpClient {
 
   // POST
   async post(path: string, data?: any): Promise<any> {
-    try {
-      const response = await this.axiosInstance.post(path, qs.stringify(data))
-      return response.data
-    } catch (error) {
-      console.error('POST请求错误:', error)
-      throw error
-    }
+    const response = await this.axiosInstance.post(path, qs.stringify(data))
+    return response.data
   }
 
   async postNotserialize(path: string, data?: any): Promise<any> {
     try {
       console.log(data)
-      const response = await this.axiosInstance.postForm(path, data,{headers: {'Content-Type': 'blob'}})
+      const response = await this.axiosInstance.postForm(path, data, {
+        headers: { 'Content-Type': 'form-data' }
+      })
       return response.data
     } catch (error) {
       console.error('POST请求错误:', error)
       throw error
     }
   }
-
 
   // Delete
   async delete(path: string, data?: any): Promise<any> {
