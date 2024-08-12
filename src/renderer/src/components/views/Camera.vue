@@ -188,7 +188,7 @@ async function ticketDialogBtn(res: boolean) {
       camera_id: cInfo.value.camera,
       description: ticketDescription.value
     }
-    console.log("ticketDescription",ticketDescription.value)
+    console.log('ticketDescription', ticketDescription.value)
     const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
     if (ticket_resp.message === 'Error') {
       isRemoterButtonDisabled.value = false
@@ -196,15 +196,11 @@ async function ticketDialogBtn(res: boolean) {
       return
     }
     cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
-    let imgFile=base64ImgtoFile(cInfo.value.imgPath)
-    let formData=new FormData()
-    formData.append("ticket_id",String(ticket_resp.data?.ticket_id))
-    formData.append("image",imgFile)
-    let reqUploadImg={formData}
-    console.log(reqUploadImg)
-    sendMsgToCloudService.uploadImg(
-      reqUploadImg
-    )
+    let imgFile = base64ImgtoFile(cInfo.value.imgPath, 'image.png')
+    let formData = new FormData()
+    formData.append('ticket_id', String(ticket_resp.data?.ticket_id))
+    formData.append('image', imgFile)
+    sendMsgToCloudService.uploadImg(formData)
     const readyTicket = await sendMsgToCloudService.readyTicket(ticket_resp.data!.ticket_id)
     rInfo.value = {
       remoterId: String(ticket_resp.data!.ticket_id),
@@ -229,20 +225,26 @@ async function ticketDialogBtn(res: boolean) {
   }
 }
 
-function base64ImgtoFile(dataurl, filename = 'file') {
-      const arr = dataurl.split(',')
-      const mime = arr[0].match(/:(.*?);/)[1]
-      const suffix = mime.split('/')[1]
-      const bstr = atob(arr[1])
-      let n = bstr.length
-      const u8arr = new Uint8Array(n)
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n)
-      }
-      return new File([u8arr], `${filename}.${suffix}`, {
-        type: mime
-      })
-    }
+function base64ImgtoFile(base64Data, fileName = 'file') {
+  // Split the base64 string into the data URL part and the base64 encoded data part
+  const [header, base64] = base64Data.split(',')
+
+  // Decode the base64 string
+  const binaryString = window.atob(base64)
+  const len = binaryString.length
+  const bytes = new Uint8Array(len)
+
+  // Convert binary string to byte array
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+
+  // Create a Blob object
+  const blob = new Blob([bytes], { type: header.match(/:(.*?);/)[1] })
+
+  // Convert Blob to File
+  return new File([blob], fileName, { type: blob.type })
+}
 </script>
 <template>
   <div class="camera-page">
