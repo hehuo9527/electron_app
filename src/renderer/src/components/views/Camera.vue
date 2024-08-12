@@ -37,10 +37,30 @@ function getDate() {
   const seconds = String(d.getSeconds()).padStart(2, '0')
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
+
+function customNotification(message: string, backgroundColor: string, textColor: string) {
+  ElNotification({
+    message: `<div style="color: ${textColor}">${message}</div>`,
+    dangerouslyUseHTMLString: true,
+    customClass: 'custom-notification', // 添加自定义类名
+    duration: 3000 // 持续时间（毫秒）
+  })
+
+  // 动态应用样式
+  const style = document.createElement('style')
+  style.innerHTML = `
+    .el-notification.custom-notification {
+      background-color: ${backgroundColor} !important;
+    }
+  `
+  document.head.appendChild(style)
+}
+customNotification('这是一个通知', '#f56c6c', '#ffffff')
 </script>
 
 <template>
   <div class="camera">
+    <button @click="customNotification('这是一个通知', '#f56c6c', '#ffffff')"></button>
     <div class="left-page">
       <el-button class="btn">{{ t('连接相机') }}</el-button>
       <el-button class="btn" :disabled="!remoteBtn">{{ t('请求远程设置') }}</el-button>
