@@ -180,7 +180,7 @@ function dialogBtn(res: boolean) {
   closeTicketDialog.value = false
   console.log(res)
 }
-
+import  * as  fs from  "fs"
 async function ticketDialogBtn(res: boolean) {
   createTicketDialog.value = false
   if (res) {
@@ -196,11 +196,12 @@ async function ticketDialogBtn(res: boolean) {
       return
     }
     cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
-    let imgFile = base64ImgtoFile(cInfo.value.imgPath, 'image.png')
-    let formData = new FormData()
-    formData.append('ticket_id', String(ticket_resp.data?.ticket_id))
-    formData.append('image', imgFile)
-    sendMsgToCloudService.uploadImg(formData)
+    // let imgFile = base64ImgtoFile(cInfo.value.imgPath, 'image.png')
+    // console.log("imageFile",imgFile)
+    // let formdata=new FormData()
+    // formdata.append("ticket_id",String(ticket_resp.data?.ticket_id))
+    // formdata.append('image', imgFile)
+    // sendMsgToCloudService.uploadImg(formdata)
     const readyTicket = await sendMsgToCloudService.readyTicket(ticket_resp.data!.ticket_id)
     rInfo.value = {
       remoterId: String(ticket_resp.data!.ticket_id),

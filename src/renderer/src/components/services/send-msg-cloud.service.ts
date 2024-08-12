@@ -77,8 +77,7 @@ export class SendMsgToCloudService {
 
   async uploadImg(uploadImgReq: unknown) {
     try {
-      this
-      const uploadImgResp: ReadyTicketResp = await this.httpClient.postNotserialize(
+        const uploadImgResp: ReadyTicketResp = await this.httpClient.postNotserialize(
         '/image',
         uploadImgReq
       )

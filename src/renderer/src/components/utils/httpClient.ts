@@ -36,8 +36,8 @@ export class HttpClient {
 
   async postNotserialize(path: string, data?: any): Promise<any> {
     try {
-      console.log(data.image)
-      const response = await this.axiosInstance.post(path, data,{headers: {'Content-Type': 'multipart/form-data'}})
+      console.log(data)
+      const response = await this.axiosInstance.postForm(path, data,{headers: {'Content-Type': 'blob'}})
       return response.data
     } catch (error) {
       console.error('POST请求错误:', error)
