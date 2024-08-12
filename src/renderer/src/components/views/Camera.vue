@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { h, ref } from 'vue'
 import { CameraInfo, CameraRespMsg } from '@src/types/cameraTypes'
 import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
@@ -16,8 +16,11 @@ import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
 import { AuthService } from '../utils/authService'
 import { error } from 'console'
+import { ElNotification } from 'element-plus'
 const { t } = useI18n()
 const remoteBtn = ref(false)
+const createTicketDialog = ref(false)
+const closeTicketDialog = ref(false)
 const cInfo = ref<CameraInfo>({
   name: '',
   status: '',
@@ -71,6 +74,38 @@ function getDate() {
       </div>
     </div>
   </div>
+  <el-dialog
+    class="remote-dialog"
+    v-model="createTicketDialog"
+    title="请输入你的问题"
+    width="500"
+    center
+    align-center
+  >
+    <textarea class="input-area"></textarea>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="danger" @click="createTicketDialog = false">NO</el-button>
+        <el-button type="primary" @click="createTicketDialog = false"> YES </el-button>
+      </div>
+    </template>
+  </el-dialog>
+  <el-dialog
+    class="close-dialog"
+    v-model="closeTicketDialog"
+    title="是否关闭对话框"
+    width="500"
+    center
+    align-center
+  >
+    <textarea class="input-area"></textarea>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="danger" @click="closeTicketDialog = false">NO</el-button>
+        <el-button type="primary" @click="closeTicketDialog = false"> YES </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 <style scoped>
 .camera {
@@ -169,5 +204,12 @@ function getDate() {
   border: 1px solid rgb(89, 183, 226);
   border-radius: 4px;
   width: 100px;
+}
+.input-area {
+  resize: none;
+  border: 1px solid rgb(218, 98, 0);
+  border-radius: 4px;
+  height: 60px;
+  width: 100%;
 }
 </style>
