@@ -10,6 +10,7 @@ export function startSDK(mainWindow: BrowserWindow): ChildProcess | null {
 
   try {
     const sdkPath = path.join(rootPath, '\\CameraSDK_Release\\CameraSDK.exe')
+    console.log(sdkPath)
     cppProcess = exec(sdkPath)
     mainWindow.webContents.send(`log', 'start sdk success workDir ${rootPath}`)
     return cppProcess

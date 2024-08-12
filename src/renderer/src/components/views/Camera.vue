@@ -121,7 +121,6 @@ async function SDKMsgHandle(evt, data) {
   if (cameraRespMsg.name.match('onConnect')) {
     isReady.value = true
     isRemoterButtonDisabled.value = false
-    sendMsgToCloudService.updateCameraStatus(e_mqtt.clientId, 'connect')
     cInfo.value.camera = cameraRespMsg.message
     DisplayMessage('相机连接成功!')
     cInfo.value.status = 'Connect'
@@ -187,14 +186,25 @@ async function ticketDialogBtn(res: boolean) {
   if (res) {
     const req_create_ticket = {
       camera_id: cInfo.value.camera,
-      description: ticketDescription
+      description: ticketDescription.value
     }
+    console.log("ticketDescription",ticketDescription.value)
     const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
     if (ticket_resp.message === 'Error') {
       isRemoterButtonDisabled.value = false
       DisplayMessage('创建订单失败')
       return
     }
+    cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
+    let imgFile=base64ImgtoFile(cInfo.value.imgPath)
+    let formData=new FormData()
+    formData.append("ticket_id",String(ticket_resp.data?.ticket_id))
+    formData.append("image",imgFile)
+    let reqUploadImg={formData}
+    console.log(reqUploadImg)
+    sendMsgToCloudService.uploadImg(
+      reqUploadImg
+    )
     const readyTicket = await sendMsgToCloudService.readyTicket(ticket_resp.data!.ticket_id)
     rInfo.value = {
       remoterId: String(ticket_resp.data!.ticket_id),
@@ -218,6 +228,21 @@ async function ticketDialogBtn(res: boolean) {
     }
   }
 }
+
+function base64ImgtoFile(dataurl, filename = 'file') {
+      const arr = dataurl.split(',')
+      const mime = arr[0].match(/:(.*?);/)[1]
+      const suffix = mime.split('/')[1]
+      const bstr = atob(arr[1])
+      let n = bstr.length
+      const u8arr = new Uint8Array(n)
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n)
+      }
+      return new File([u8arr], `${filename}.${suffix}`, {
+        type: mime
+      })
+    }
 </script>
 <template>
   <div class="camera-page">

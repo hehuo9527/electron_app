@@ -34,6 +34,18 @@ export class HttpClient {
     }
   }
 
+  async postNotserialize(path: string, data?: any): Promise<any> {
+    try {
+      console.log(data.image)
+      const response = await this.axiosInstance.post(path, data,{headers: {'Content-Type': 'multipart/form-data'}})
+      return response.data
+    } catch (error) {
+      console.error('POST请求错误:', error)
+      throw error
+    }
+  }
+
+
   // Delete
   async delete(path: string, data?: any): Promise<any> {
     try {
