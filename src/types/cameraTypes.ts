@@ -7,7 +7,7 @@ export interface CameraInfo {
 export interface CameraOperationReqMsg {
   name: string
   operation?: string
-  val?: string | number
+  value?: string | number
 }
 
 export interface CameraRespMsg {

@@ -106,6 +106,7 @@ function Registlistener(mainWindow: BrowserWindow, sServer: SocketServer) {
       evt.returnValue = 'success'
     } catch (error) {
       mainWindow.webContents.send('log', error)
+      evt.returnValue = 'failed'
     }
   })
   ipcMain.on('mqtt:msg', (evt, data) => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CameraInfo, CameraOperationReqMsg, CameraRespMsg } from '@src/types/cameraTypes'
+import { CameraInfo, CameraRespMsg } from '@src/types/cameraTypes'
 import { RemoterInfo } from '@src/types/userTypes'
 import { useI18n } from 'vue-i18n'
 import { SendMsgToCloudService } from '../services/send-msg-cloud.service'
@@ -14,8 +14,8 @@ import {
 import { OBSClient } from '@renderer/components/utils/obsClient'
 import mockImg from '@renderer/assets/mock-img.jpg'
 import { ipcRenderer } from 'electron'
-import { ElNotification } from 'element-plus'
 import { AuthService } from '../utils/authService'
+import { error } from 'console'
 
 const cInfo = ref<CameraInfo>({
   camera: '',
@@ -27,6 +27,7 @@ const rInfo = ref<RemoterInfo>({
   status: 'Remote Pairing...'
 })
 const auth = new AuthService()
+const ticketDescription = ref('')
 const isReady = ref(false)
 const isAlertMessageBoxVisible = ref(false) //连接相机等待框
 const isMessageBoxVisible = ref(false) //相机信息显示
@@ -39,41 +40,29 @@ let ws_obs: OBSClient = new OBSClient()
 let e_mqtt: MQTT
 const { t } = useI18n()
 const sendMsgToCloudService = new SendMsgToCloudService()
-const centerDialogVisible = ref(false)
-function setCameraInfo() {
-  // update camera info and get a picture
-  // TODO need update when sdk return
-  cInfo.value = {
-    camera: 'A7M4-123456678',
-    status: 'Connected',
-    imgPath: mockImg
-  }
-}
+const closeTicketDialog = ref(false)
+const createTicketDialog = ref(false)
+const hintMsg = ref('')
+
 async function cameraConnection() {
   isCameraButtonDisabled.value = true
   isAlertMessageBoxVisible.value = true
   try {
-    // const checkRes = checkOBSInput()
-    // if (!checkRes) {
-    //   isCameraButtonDisabled.value = false
-    //   isAlertMessageBoxVisible.value = false
-    //   return
-    // }
     const response = ipcRenderer.sendSync('startSDK')
     console.log('startSDK', response)
     if (response == 'success') {
       DisplayMessage('启动SDK成功')
     } else {
-      // TODO
-      DisplayMessage('需要重启PC App')
+      DisplayMessage('启动SDK失败')
+      throw error('startSDK fail')
     }
-    setCameraInfo()
+    // setCameraInfo()
     await ws_obs.connect(`ws://${obs_url.value}`)
     cInfo.value.imgPath = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
   } catch (error) {
     isCameraButtonDisabled.value = false
     isAlertMessageBoxVisible.value = false
-    DisplayMessage('相机初始化失败,请检查USB')
+    DisplayMessage('相机初始化失败,请检查USB和OBS')
     return
   }
   isCameraButtonDisabled.value = false
@@ -81,73 +70,24 @@ async function cameraConnection() {
   isMessageBoxVisible.value = true
 }
 
-// function checkOBSInput() {
-//   if (obs_url.value === '') {
-//     DisplayMessage(t('未设置OBS IP地址'))
-//     return false
-//   }
-//   if (obs_source.value === '') {
-//     DisplayMessage('没有设置OBS的信号源')
-//     return false
-//   }
-//   return true
-// }
-
 async function requestRemoteSetting() {
   if (isReady.value == false) {
     DisplayMessage('相机准备未完成')
     return
   }
   isRemoterButtonDisabled.value = true
-  // TODO description ,camera_id display
-  const req_create_ticket = {
-    camera_id: 'I7M4 (123456678)',
-    description: 'help to do something'
-  }
-  const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
-  if (ticket_resp.message === 'Error') {
-    DisplayMessage('创建订单失败')
-    return
-  }
-  const readyTicket = await sendMsgToCloudService.readyTicket(ticket_resp.data!.ticket_id)
-  rInfo.value = {
-    remoterId: String(ticket_resp.data!.ticket_id),
-    status: 'waiting'
-  }
-
-  // connect
-  try {
-    let uInfo = auth.get()
-    e_mqtt = new MQTT(uInfo.username)
-    e_mqtt.clientId = String(ticket_resp.data!.ticket_id)
-    e_mqtt.topic = ticket_resp.data!.topic
-    rInfo.value.status = 'Remote Setting Completed'
-    isRemoterButtonDisabled.value = false
-    ProcessMsg(e_mqtt)
-    DisplayMessage('远程服务订单创建成功,等待接单')
-  } catch (error) {
-    DisplayMessage('MQTT连接失败')
-    return
-  }
-
-  // is_ticket_ready = await sendMsgToCloudService.readyTicket(ticket_resp.data.ticket_id)
-  // if (is_ticket_ready.message !== 'OK') {
-  //   throw error('ticket is not ready')
-  //   // TODO: Qiu
-  // }
+  createTicketDialog.value = true
 }
 
-function commandHandle(msg: string) {
-  // ipcRenderer.send('mqtt:msg', JSON.stringify(command))
-  // DisplayMessage(
-  //   `正在${command.operation == 'GET' ? '获取' : '设置'}相机${command.name}:${command.value}`
-  // )
-  ipcRenderer.send('mqtt:msg', msg)
-  DisplayMessage(`下发命令${msg}`)
+function commandHandle(command: CommandData) {
+  ipcRenderer.send('mqtt:msg', JSON.stringify(command))
+  DisplayMessage(
+    `正在${command.operation == 'GET' ? '获取' : '设置'}相机${command.name}:${command.value}`
+  )
 }
 
 function ticketHandle(ticket_msg: TicketStatusMsgData) {
-  centerDialogVisible.value = true
+  closeTicketDialog.value = true
 }
 
 function cameraHandle(camera_msg: CameraStatusMsgData) {}
@@ -159,21 +99,19 @@ function ProcessMsg(e_mqtt: MQTT) {
   e_mqtt.client.on('message', (topic, message) => {
     console.log(`Received message ${message} from topic:${topic}`)
 
-    // mqttMsg.value = JSON.parse(message.toString())
-
-    // if (mqttMsg.value?.type == 'command') {
-    //   console.log('CommandData ', mqttMsg.value.data)
-    // } else if (mqttMsg.value?.type == 'ticket_status_msg') {
-    //   console.log('TicketStatusMsgData ', mqttMsg.value.data)
-    //   ticketHandle(mqttMsg.value.data as TicketStatusMsgData)
-    //   DisplayMessage(mqttMsg.value.data)
-    // } else if (mqttMsg.value?.type == 'camera_status_msg') {
-    //   console.log('CameraStatusMsgData ', mqttMsg.value.data)
-    //   cameraHandle(mqttMsg.value.data as CameraStatusMsgData)
-    //   DisplayMessage(mqttMsg.value.data)
-    // }
-    commandHandle(message.toString())
-    console.log('send msg success')
+    mqttMsg.value = JSON.parse(message.toString())
+    if (mqttMsg.value?.type == 'command') {
+      console.log('CommandData ', mqttMsg.value.data)
+      commandHandle(mqttMsg.value.data as CommandData)
+    } else if (mqttMsg.value?.type == 'ticket_status_msg') {
+      console.log('TicketStatusMsgData ', mqttMsg.value.data)
+      ticketHandle(mqttMsg.value.data as TicketStatusMsgData)
+      DisplayMessage(mqttMsg.value.data)
+    } else if (mqttMsg.value?.type == 'camera_status_msg') {
+      console.log('CameraStatusMsgData ', mqttMsg.value.data)
+      cameraHandle(mqttMsg.value.data as CameraStatusMsgData)
+      DisplayMessage(mqttMsg.value.data)
+    }
   })
 }
 
@@ -183,11 +121,14 @@ async function SDKMsgHandle(evt, data) {
   const cameraRespMsg: CameraRespMsg = JSON.parse(data.toString())
   if (cameraRespMsg.name.match('onConnect')) {
     isReady.value = true
-    DisplayMessage('相机连接成功!')
+    isRemoterButtonDisabled.value = false
+    sendMsgToCloudService.updateCameraStatus(e_mqtt.clientId, 'connect')
     cInfo.value.camera = cameraRespMsg.message
+    DisplayMessage('相机连接成功!')
     cInfo.value.status = 'Connect'
   } else if (cameraRespMsg.name.match('disConnect')) {
     cInfo.value.status = 'Disconnect'
+    sendMsgToCloudService.updateCameraStatus(e_mqtt.clientId, 'disconnect')
     DisplayMessage('相机断开了')
   } else {
     // let command = mqttMsg.value?.data as CommandData
@@ -198,7 +139,6 @@ async function SDKMsgHandle(evt, data) {
       name: cameraRespMsg.name,
       value: cameraRespMsg.message
     }
-    DisplayMessage(`上报消息:${JSON.stringify(updateParameters).toString()}`)
     if (cameraRespMsg.status !== 'OK') {
       DisplayMessage('相机消息设置不成功')
       // throw error('SDK Return ERROR')
@@ -218,17 +158,20 @@ async function SDKMsgHandle(evt, data) {
     // TODO Send image to cloud
     let obs_image = (await ws_obs.getSourceScreenshot(obs_source.value)).imageData
     console.log('obs_img msg get success')
-    DisplayMessage('上传图片')
-    // sendMsgToCloudService.uploadImg({})
+    sendMsgToCloudService
+      .uploadImg({})
+      .then(() => {
+        DisplayMessage('上传图片成功')
+      })
+      .catch((error) => {
+        DisplayMessage('上传图片失败')
+      })
   }
 }
 
 function DisplayMessage(meesage) {
-  ElNotification({
-    message: meesage,
-    offset: 100,
-    duration: 5000
-  })
+  console.log(meesage)
+  hintMsg.value = meesage
 }
 
 function ResigterListener() {
@@ -236,23 +179,52 @@ function ResigterListener() {
 }
 ResigterListener()
 
-function test() {
-  centerDialogVisible.value = true
-}
 function dialogBtn(res: boolean) {
-  centerDialogVisible.value = false
+  closeTicketDialog.value = false
+  console.log(res)
+}
+
+async function ticketDialogBtn(res: boolean) {
+  createTicketDialog.value = false
+  if (res) {
+    const req_create_ticket = {
+      camera_id: cInfo.value.camera,
+      description: ticketDescription
+    }
+    const ticket_resp = await sendMsgToCloudService.createTicket(req_create_ticket)
+    if (ticket_resp.message === 'Error') {
+      isRemoterButtonDisabled.value = false
+      DisplayMessage('创建订单失败')
+      return
+    }
+    const readyTicket = await sendMsgToCloudService.readyTicket(ticket_resp.data!.ticket_id)
+    rInfo.value = {
+      remoterId: String(ticket_resp.data!.ticket_id),
+      status: 'waiting'
+    }
+
+    // connect
+    try {
+      let uInfo = auth.get()
+      e_mqtt = new MQTT(uInfo.username)
+      e_mqtt.clientId = String(ticket_resp.data!.ticket_id)
+      e_mqtt.topic = ticket_resp.data!.topic
+      rInfo.value.status = 'Remote Setting Completed'
+      // isRemoterButtonDisabled.value = false
+      ProcessMsg(e_mqtt)
+      DisplayMessage('远程服务订单创建成功,等待接单')
+    } catch (error) {
+      isRemoterButtonDisabled.value = false
+      DisplayMessage('MQTT连接失败')
+      return
+    }
+  }
 }
 </script>
 <template>
   <div class="camera-page">
     <el-row>
-      <div />
-      <!-- <el-col :span="10" class="obs_config">
-        <el-input v-model="obs_url" placeholder="请输入OBS的IP:PORT"></el-input>
-        <el-input v-model="obs_source" placeholder="请输入OBS的信号源"></el-input>
-      </el-col> -->
-      <el-col :span="10" style="text-align: right">
-        <!-- <button @click="test">test</button> -->
+      <el-col :span="4" style="text-align: right">
         <el-button
           type="primary"
           plain
@@ -262,7 +234,7 @@ function dialogBtn(res: boolean) {
           >{{ t('连接相机') }}</el-button
         >
       </el-col>
-      <el-col :span="4" style="text-align: right">
+      <el-col :span="20" style="text-align: right">
         <el-button
           type="primary"
           plain
@@ -293,10 +265,6 @@ function dialogBtn(res: boolean) {
             <b>{{ t('状态') }}</b
             >{{ cInfo?.status }}
           </p>
-          <!-- <p>
-            <b>{{ t('客户端ID') }}</b
-            >{{ cInfo?.clientId }}
-          </p> -->
         </div>
         <div class="message-box">
           <p>
@@ -314,12 +282,36 @@ function dialogBtn(res: boolean) {
       </div>
     </div>
   </div>
-  <el-dialog v-model="centerDialogVisible" width="500" align-center>
+  <div class="hint-msg">{{ hintMsg }}</div>
+  <el-dialog v-model="closeTicketDialog" width="500" align-center>
     <span>设置效果满意,关闭订单?</span>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogBtn(false)">NO</el-button>
         <el-button type="primary" @click="dialogBtn(true)"> YES </el-button>
+      </div>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="createTicketDialog" width="500" align-center>
+    <div>
+      <span>相机ID:</span>
+      <span class="camera-id"> {{ cInfo?.camera }}</span>
+    </div>
+
+    <div>
+      <span
+        >订单描述:<el-input
+          v-model="ticketDescription"
+          class="ticket-input"
+          placeholder="请输入订单描述"
+        ></el-input
+      ></span>
+    </div>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="ticketDialogBtn(false)">NO</el-button>
+        <el-button type="primary" @click="ticketDialogBtn(true)"> YES </el-button>
       </div>
     </template>
   </el-dialog>
@@ -330,7 +322,7 @@ el-button {
   width: 150px;
 }
 .camera-page {
-  height: 630px;
+  height: 600px;
 }
 
 .waiting-rect {
@@ -411,5 +403,18 @@ b {
 }
 .message-box:last-child {
   margin-top: 80px;
+}
+
+.ticket-input {
+  margin-left: 30px;
+  width: 250px;
+}
+.camera-id {
+  margin-left: 40px;
+}
+
+.hint-msg {
+  width: 100%;
+  text-align: center;
 }
 </style>
