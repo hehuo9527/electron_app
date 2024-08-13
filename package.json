@@ -67,6 +67,7 @@
     "obs-websocket-js": "^5.0.5",
     "prettier": "^3.2.4",
     "qs": "^6.12.3",
+    "terser": "^5.31.6",
     "typescript": "^5.2.2",
     "vite": "^5.3.5",
     "vite-plugin-electron": "^0.15.4",

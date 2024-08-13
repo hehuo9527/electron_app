@@ -8,12 +8,30 @@ import dotenv from 'dotenv'
 dotenv.config({ path: resolve('src/.env') })
 export default defineConfig({
   main: {
+    build: {
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true, // 移除所有 console.log
+          drop_debugger: true // 移除所有 debugger
+        }
+      }
+    },
     plugins: [externalizeDepsPlugin()]
   },
   preload: {
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
+    build: {
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true, // 移除所有 console.log
+          drop_debugger: true // 移除所有 debugger
+        }
+      }
+    },
     resolve: {
       alias: {
         '@src': resolve(__dirname, 'src'),
