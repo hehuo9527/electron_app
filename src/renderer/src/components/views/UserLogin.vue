@@ -9,6 +9,9 @@ import { AuthService } from '../utils/authService'
 import emitter from '@src/utils/emitter'
 import router from '@renderer/router/router'
 import { useI18n } from 'vue-i18n'
+import { promises } from 'dns'
+import { ipcRenderer } from 'electron'
+import axios from 'axios'
 
 const { t } = useI18n()
 const loginRes = ref(false)
@@ -25,25 +28,44 @@ function check(): boolean {
   return true
 }
 
-async function login(loginForm: LoginInfo) {
-  if (!check()) {
-  }
+async function getAllCameraValue() {
   try {
-    const loginResp: LoginResp = await auth(loginForm)
-
-    const userInfo: UserInfo = {
-      username: loginForm.username,
-      token: loginResp.data.token
+    // 发送七个同步 IPC 消息到主进程
+    const responses: any = []
+    for (let i = 0; i < 4; i++) {
+      const response = ipcRenderer.sendSync('pc:msg', `Message ${i + 1}`)
+      console.log('ev', response)
+      responses.push(response)
     }
-    const aService = new AuthService()
-    aService.save(userInfo)
-
-    emitter.emit('login-event')
-    router.push('/Camera')
+    console.log('resp', responses)
+    const resp = await axios.post('https://jsonplaceholder.typicode.com/posts', {
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8'
+      }
+    })
+    console.log(resp.status) // Access data from the response
   } catch (error) {
-    loginRes.value = true
-    loginHint.value = 'Login Failed'
+    console.log(error)
   }
+}
+async function login(loginForm: LoginInfo) {
+  getAllCameraValue()
+  // if (!check()) {
+  // }
+  // try {
+  //   const loginResp: LoginResp = await auth(loginForm)
+  //   const userInfo: UserInfo = {
+  //     username: loginForm.username,
+  //     token: loginResp.data.token
+  //   }
+  //   const aService = new AuthService()
+  //   aService.save(userInfo)
+  //   emitter.emit('login-event')
+  //   router.push('/Camera')
+  // } catch (error) {
+  //   loginRes.value = true
+  //   loginHint.value = 'Login Failed'
+  // }
 }
 </script>
 

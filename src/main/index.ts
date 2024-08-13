@@ -4,7 +4,12 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import SocketClient from '../utils/socket-client'
 import { startSDK } from './sdk-handle'
 import { SocketServer } from './socket-serve'
+import EventEmitter from 'events'
 let mainWindow: BrowserWindow
+// export let pendingResponses = []
+const pendingResponses = new Map<number, (response: string) => void>()
+let requestId = 0
+export const responseEmitter = new EventEmitter()
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -117,6 +122,31 @@ function Registlistener(mainWindow: BrowserWindow, sServer: SocketServer) {
     } catch (error) {
       mainWindow.webContents.send('log', ' send to sdk failed' + data)
     }
+  })
+
+  // 处理同步 IPC 消息
+  responseEmitter.on('response', (response, id) => {
+    const responseHandler = pendingResponses.get(id)
+    if (responseHandler) {
+      responseHandler(response)
+      pendingResponses.delete(id) // 删除已处理的请求
+    }
+  })
+  ipcMain.on('pc:msg', async (event, message) => {
+    requestId++ // 增加请求 ID 以区分不同的请求
+
+    // 创建一个 Promise 用来等待 TCP 返回的消息
+    const responsePromise = new Promise<string>((resolve) => {
+      pendingResponses.set(requestId, resolve)
+    })
+
+    // 发送消息到 TCP 服务器
+    // sServer.socket.write(message)
+    responseEmitter.emit('send-to-server', message, requestId)
+
+    // 等待 TCP 消息返回
+    const response = await responsePromise
+    event.returnValue = response
   })
 }
 

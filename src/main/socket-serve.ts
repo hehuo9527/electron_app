@@ -1,5 +1,6 @@
 import { BrowserWindow } from 'electron'
 import * as net from 'net'
+import { responseEmitter } from '.'
 
 export class SocketServer {
   port: number
@@ -8,14 +9,18 @@ export class SocketServer {
 
   constructor(port, mainWindow: BrowserWindow) {
     this.port = port
+    let responses: any = []
+    let currentRequestId: number
+
     this.server = net.createServer((socket) => {
       this.socket = socket
       console.log('Client connected')
       socket.on('data', (data) => {
         console.log('Received:', data.toString())
-        // console.log(mainWindow.webContents)
+        // responses.push(data.toString())
+        responseEmitter.emit('response', data.toString(), currentRequestId)
+        // responses = []
 
-        // console.log("11111111")
         mainWindow.webContents.send('sdk:msg', `${data.toString()}`)
       })
       socket.on('end', () => {
@@ -26,6 +31,17 @@ export class SocketServer {
       socket.on('error', (err) => {
         mainWindow.webContents.send('log', `receive error from sdk ${err.message}`)
       })
+    })
+    responseEmitter.on('send-to-server', (message: string, id: number) => {
+      // 记录当前的请求 ID
+      currentRequestId = id
+
+      if (this.socket && !this.socket.destroyed) {
+        // 发送消息到 TCP 服务器
+        this.socket.write(message)
+      } else {
+        console.error('Socket is not connected')
+      }
     })
   }
 
