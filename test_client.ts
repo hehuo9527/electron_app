@@ -21,16 +21,34 @@ client.on('data', (data) => {
     let data = { name: 'ios', status: 'ok', value: '110' }
     setTimeout(() => {
       client.write(JSON.stringify(data))
-    }, 2000)
+    }, 1000)
   }
   if (data.toString().match('3')) {
     let data = { name: 'focus', status: 'ok', value: 'auto' }
     setTimeout(() => {
       client.write(JSON.stringify(data))
-    }, 3000)
+    }, 1000)
   }
   if (data.toString().match('4')) {
     let data = { name: 'flash', status: 'ok', value: 'true' }
+    setTimeout(() => {
+      client.write(JSON.stringify(data))
+    }, 1000)
+  }
+  if (data.toString().match('5')) {
+    let data = { name: '5', status: 'ok', value: 'true' }
+    setTimeout(() => {
+      client.write(JSON.stringify(data))
+    }, 1000)
+  }
+  if (data.toString().match('6')) {
+    let data = { name: '6', status: 'ok', value: 'true' }
+    setTimeout(() => {
+      client.write(JSON.stringify(data))
+    }, 1000)
+  }
+  if (data.toString().match('7')) {
+    let data = { name: '7', status: 'ok', value: 'true' }
     setTimeout(() => {
       client.write(JSON.stringify(data))
     }, 4000)
